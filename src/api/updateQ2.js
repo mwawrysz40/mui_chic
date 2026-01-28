@@ -2,11 +2,11 @@
 import axios from "axios";
 // import { clearSampleCache } from "./sampleService";
 
-export const updateSample = async (updatedRecord) => {
+export const updateQ2 = async (updatedRecord) => {
     //console.log('weszło do update sample', updatedRecord);
     try {
         const response = await axios.put(
-            "http://chic-kubernetes.cluster.chic.eu:1891/api/v1/UpdateSample",
+            "http://chic-kubernetes.cluster.chic.eu:1891/api/v1/UpdateQ2",
             updatedRecord,
 
             {
@@ -17,7 +17,7 @@ export const updateSample = async (updatedRecord) => {
         return response.data;
 
     } catch (error) {
-        console.error("❌ Błąd aktualizacji próbki:", error);
+        console.error("❌ Błąd aktualizacji Q2:", error);
         throw error;
     }
 };

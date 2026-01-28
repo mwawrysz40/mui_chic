@@ -59,7 +59,7 @@ export async function fetchFilterOptions() {
         if (r.person) owners.add(r.person);
         if (r.typeResarch) statuses.add(r.typeResarch);
         if (r.itemCode) types.add(r.itemCode);
-        if (r.createDate) creates.add(r.createDate);
+        if (r.createAt) creates.add(r.createAt);
     });
 
     return {
