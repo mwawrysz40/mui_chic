@@ -52,7 +52,10 @@ export const Q2Tabs = [
             {
                 id: "Status",
                 label: "Status",
-                type: "text",
+                type: "select",options: [
+                    { label: "ZGODNY", value: "ZGODNY" },
+                    { label: "NIEZGODNY", value: "NIEZGODNY" }
+                ]
             },
             {
                 id: "HibAro",
@@ -78,8 +81,8 @@ export const Q2Tabs = [
             { id: "NikoM", label: "Moc nikotyny", type: "number" },
             { id: "NikoPR1", label: "Próbka 1", type: "number" },
             { id: "NikoPR2", label: "Próbka 2", type: "number" },
-            { id: "NikoRAG1", label: "RAG1", type: "number" },
-            { id: "NikoRAG2", label: "RAG2", type: "number" },
+            { id: "NikoRAG1", label: "RAG1", type: "text", disabled: true },
+            { id: "NikoRAG2", label: "RAG2", type: "text", disabled: true },
         ],
     },
 

@@ -10,6 +10,7 @@ import { getFieldStyle } from "../config/Q2Validation.js";
 import { getQ2 } from "../api/getQ2Service.js";
 import { updateQ2 } from "../api/updateQ2.js";
 import { Q2Tabs } from "../config/Q2Fields.js";
+import { calculateNikoRAG } from "../config/Q2Calculations.js";
 
 export default function Q2Modal({ open, sampleId, onClose }) {
     const [loading, setLoading] = useState(false);
@@ -47,7 +48,17 @@ export default function Q2Modal({ open, sampleId, onClose }) {
     const isDirty = JSON.stringify(formData) !== JSON.stringify(originalData);
 
     const handleChange = (field, value) => {
-        setFormData((prev) => ({ ...prev, [field]: value }));
+        setFormData((prev) => {
+            const newData = { ...prev, [field]: value };
+
+            // Jeśli zmieniamy NikoM, NikoPR1 lub NikoPR2 -> przelicz RAG
+            if (field === "NikoM" || field === "NikoPR1" || field === "NikoPR2") {
+                newData.NikoRAG1 = calculateNikoRAG(newData.NikoM, newData.NikoPR1, "NikoPR1");
+                newData.NikoRAG2 = calculateNikoRAG(newData.NikoM, newData.NikoPR2, "NikoPR2");
+            }
+
+            return newData;
+        });
     };
 
     const handleSave = async () => {
@@ -129,7 +140,7 @@ export default function Q2Modal({ open, sampleId, onClose }) {
                                                         // Ważne dla pól typu 'date' - wymusza widoczność kalendarza
                                                         InputLabelProps={{ shrink: true }}
                                                         sx={{
-                                                            "& .MuiInputBase-root": getFieldStyle(field.id, formData[field.id])
+                                                            "& .MuiInputBase-root": getFieldStyle(field.id, formData[field.id], formData)
                                                         }}
                                                     >
                                                         {field.type === "select" &&
