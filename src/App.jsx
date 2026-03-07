@@ -5,6 +5,7 @@ import Layout from './components/Layout'
 
 const Dashboard = lazy(() => import('./pages/Dashboard'))
 const Probki = lazy(() => import('./pages/Probki'))
+const WynikProbek = lazy(() => import('./pages/WynikiProbek'))
 
 
 export default function App() {
@@ -14,6 +15,7 @@ export default function App() {
                 <Routes>
                     <Route path="/" element={<Dashboard />} />
                     <Route path="/probki" element={<Probki />} />
+                    <Route path="/wyniki" element={<WynikProbek />} />
                 </Routes>
             </Suspense>
         </Layout>

@@ -31,8 +31,8 @@ export default function Probki() {
 
     return (
         <Box>
-            <Typography variant="h4" gutterBottom>
-                Próbki
+            <Typography variant="h4" gutterBottom sx={{ fontWeight: 'bold', color: '#1976d2' }}>
+                Laboratorium: Próbki
             </Typography>
 
             {/* 🔥 Filtry kontrolowane */}
