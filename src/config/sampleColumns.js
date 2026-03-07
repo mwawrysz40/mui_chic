@@ -14,6 +14,7 @@ export const sampleColumns = [
         id: "ID",
         label: "ID",
         minWidth: 200,
+        hidden: true
     },
     {
         id: "itemName",

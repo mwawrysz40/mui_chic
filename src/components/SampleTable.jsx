@@ -117,7 +117,9 @@ export default function SampleTable({ onEdit, filters, reloadTrigger }) {
 
                         <TableHead>
                             <TableRow>
-                                {sampleColumns.map((col) => (
+                                {sampleColumns
+                                    .filter(col => !col.hidden)
+                                    .map((col) => (
                                     <TableCell
                                         key={col.id}
                                         style={{
@@ -148,7 +150,9 @@ export default function SampleTable({ onEdit, filters, reloadTrigger }) {
                         <TableBody>
                             {filteredRows.map((row) => (
                                 <TableRow key={row.id} hover>
-                                    {sampleColumns.map((col) => (
+                                    {sampleColumns
+                                        .filter(col => !col.hidden)
+                                        .map((col) => (
                                         <TableCell
                                             key={col.id}
                                             style={{

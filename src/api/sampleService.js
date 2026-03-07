@@ -1,6 +1,7 @@
 // src/api/sampleService.js
 import axios from 'axios'
 
+
 // 1. Funkcja normalizująca klucze (pozostaje bez zmian)
 const normalizeKey = (key) =>
     key
@@ -22,9 +23,11 @@ const normalizeObject = (obj) => {
  * USUNIĘTO CACHE: Teraz funkcja zawsze pobiera świeże dane z serwera.
  */
 export const fetchSamples = async () => {
+
     try {
+        const API_URL = import.meta.env.VITE_API_URL;
         // Używamy pełnego adresu zgodnie z Twoją konfiguracją
-        const res = await axios.get('http://chic-kubernetes.cluster.chic.eu:1891/api/v1/GetSample');
+        const res = await axios.get(`${API_URL}/api/v1/GetSample`);
         const raw = res.data;
 
         // Mapujemy i normalizujemy dane, dodając ID dla Material UI

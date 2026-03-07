@@ -1,12 +1,14 @@
 // src/api/updateService.js
 import axios from "axios";
+
 // import { clearSampleCache } from "./sampleService";
 
 export const updateSample = async (updatedRecord) => {
-    //console.log('weszło do update sample', updatedRecord);
+    const API_URL = import.meta.env.VITE_API_URL;
+    console.log(API_URL);
     try {
         const response = await axios.put(
-            "http://chic-kubernetes.cluster.chic.eu:1891/api/v1/UpdateSample",
+            `${API_URL}/api/v1/UpdateSample`,
             updatedRecord,
 
             {
