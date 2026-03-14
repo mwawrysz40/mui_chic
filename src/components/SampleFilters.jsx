@@ -1,111 +1,148 @@
-import React, { useEffect, useState } from 'react'
-import Accordion from '@mui/material/Accordion'
-import AccordionSummary from '@mui/material/AccordionSummary'
-import AccordionDetails from '@mui/material/AccordionDetails'
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
-import Box from '@mui/material/Box'
-import TextField from '@mui/material/TextField'
-import MenuItem from '@mui/material/MenuItem'
-import Button from '@mui/material/Button'
-import { fetchFilterOptions } from '../api/sampleService'
+// src/components/SampleFilters.jsx
+import React, { useMemo } from "react";
+import {
+    Box,
+    TextField,
+    MenuItem,
+    Grid,
+    Paper,
+    Button,
+    Typography
+} from "@mui/material";
+import RestartAltIcon from "@mui/icons-material/RestartAlt";
 
 export default function SampleFilters({ filters, setFilters }) {
-    const [options, setOptions] = useState({ owners: [], statuses: [], types: [], creates:[] })
-    const [loadingOptions, setLoadingOptions] = useState(false)
-    console.log("SampleFilters props:", { filters, setFilters });
 
-    useEffect(() => {
-        let mounted = true
-        setLoadingOptions(true)
-        fetchFilterOptions()
-            .then((opts) => {
-                if (!mounted) return
-                setOptions((prev) => ({
-                    ...prev,
-                    ...opts,
-                }))
-            })
-            .catch((err) => console.error('filter options err', err))
-            .finally(() => mounted && setLoadingOptions(false))
+    // Funkcja obsługująca zmianę w polach tekstowych i selectach
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+        setFilters((prev) => ({
+            ...prev,
+            [name]: value
+        }));
+    };
 
-        return () => (mounted = false)
-    }, [])
+    // Funkcja czyszcząca wszystkie filtry do stanu początkowego
+    const handleReset = () => {
+        setFilters({
+            search: "",
+            status: "",
+            owner: "",
+            type: ""
+        });
+    };
+    // src/components/ResultTable.jsx (fragment logiki)
 
-    const handleReset = () => setFilters({ search: '', status: '', owner: '', type: '',create:'' })
+    // const filteredRows = useMemo(() => {
+    //     // Jeśli nie ma danych, zwróć pustą tablicę
+    //     if (!rows) return [];
+    //
+    //     return rows.filter((r) => {
+    //         // 1. Logika wyszukiwania tekstowego (Search)
+    //         const searchText = (filters.search || "").toLowerCase();
+    //
+    //         // Sprawdzamy czy tekst pasuje do któregokolwiek z kluczowych pól
+    //         // Upewnij się, że nazwy pól (NrSample, ItemName) są identyczne z tymi z bazy/API
+    //         const matchesSearch = searchText === "" || [
+    //             r.NrSample,
+    //             r.ItemName,
+    //             r.ItemCode,
+    //             r.Batch
+    //         ].some(field => String(field || "").toLowerCase().includes(searchText));
+    //
+    //         // 2. Logika Statusu
+    //         // Ważne: Sprawdź czy w bazie status to "ZGODNY" czy np. ID statusu
+    //         const matchesStatus = !filters.status || r.StatusSample === filters.status;
+    //
+    //         // 3. Logika Partii (Batch)
+    //         const matchesBatch = !filters.batch ||
+    //             String(r.Batch || "").toLowerCase().includes(filters.batch.toLowerCase());
+    //
+    //         // Wszystkie warunki muszą być spełnione
+    //         return matchesSearch && matchesStatus && matchesBatch;
+    //     });
+    // }, [rows, filters]);
 
     return (
-        <Accordion>
-            <AccordionSummary expandIcon={<ExpandMoreIcon />}>Filtry</AccordionSummary>
+        <Paper sx={{ p: 2, mb: 3, border: '1px solid #e0e0e0', boxShadow: 'none' }}>
+            <Typography variant="subtitle2" sx={{ mb: 2, color: '#666', fontWeight: 'bold' }}>
+                Filtrowanie listy
+            </Typography>
 
-            <AccordionDetails>
-                <Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr 1fr 1fr' } }}>
+            <Grid container spacing={2} alignItems="center">
+                {/* Wyszukiwarka ogólna */}
+                <Grid item xs={12} md={3}>
                     <TextField
-                        label="Szukaj"
-                        size="small"
+                        fullWidth
+                        label="Szukaj (tekst)"
+                        name="search"
                         value={filters.search}
-                        onChange={(e) => setFilters((f) => ({ ...f, search: e.target.value }))}
+                        onChange={handleChange}
+                        size="small"
+                        placeholder="Np. nazwa, nr..."
                     />
-                    <TextField
-                        select
-                        label="Data utworzenia"
-                        size="small"
-                        value={filters.create}
-                        onChange={(e) => setFilters((f) => ({ ...f, create: e.target.value }))}
-                        disabled={loadingOptions}
-                    >
-                        <MenuItem value="">—</MenuItem>
-                        {(options.creates??[]).map((s) => (
-                            <MenuItem key={s} value={s}>{s}</MenuItem>
-                        ))}
-                    </TextField>
+                </Grid>
 
+                {/* Filtr Statusu */}
+                <Grid item xs={12} md={2}>
                     <TextField
                         select
-                        label="Rodzaj badania"
-                        size="small"
+                        fullWidth
+                        label="Status"
+                        name="status"
                         value={filters.status}
-                        onChange={(e) => setFilters((f) => ({ ...f, status: e.target.value }))}
-                        disabled={loadingOptions}
-                    >
-                        <MenuItem value="">—</MenuItem>
-                        {options.statuses.map((s) => (
-                            <MenuItem key={s} value={s}>{s}</MenuItem>
-                        ))}
-                    </TextField>
-
-                    <TextField
-                        select
-                        label="Właściciel"
+                        onChange={handleChange}
                         size="small"
+                    >
+                        <MenuItem value="">Wszystkie</MenuItem>
+                        <MenuItem value="W TRAKCIE">W TRAKCIE</MenuItem>
+                        <MenuItem value="ZAKOŃCZONE">ZAKOŃCZONE</MenuItem>
+                        <MenuItem value="OCZEKUJE">OCZEKUJE</MenuItem>
+                    </TextField>
+                </Grid>
+
+                {/* Filtr Osoby (Owner) */}
+                <Grid item xs={12} md={2}>
+                    <TextField
+                        fullWidth
+                        label="Osoba"
+                        name="owner"
                         value={filters.owner}
-                        onChange={(e) => setFilters((f) => ({ ...f, owner: e.target.value }))}
-                        disabled={loadingOptions}
-                    >
-                        <MenuItem value="">—</MenuItem>
-                        {options.owners.map((o) => (
-                            <MenuItem key={o} value={o}>{o}</MenuItem>
-                        ))}
-                    </TextField>
-
-                    <TextField
-                        select
-                        label="Indeks"
+                        onChange={handleChange}
                         size="small"
-                        value={filters.type}
-                        onChange={(e) => setFilters((f) => ({ ...f, type: e.target.value }))}
-                        disabled={loadingOptions}
-                    >
-                        <MenuItem value="">—</MenuItem>
-                        {options.types.map((t) => (
-                            <MenuItem key={t} value={t}>{t}</MenuItem>
-                        ))}
-                    </TextField>
-                </Box>
+                    />
+                </Grid>
 
-                <Box sx={{ mt: 2 }}>
-                    <Button variant="outlined" onClick={handleReset}>Resetuj filtry</Button>
-                </Box>
-            </AccordionDetails>
-        </Accordion>
-    )
+                {/* Filtr Typu (ItemCode) */}
+                <Grid item xs={12} md={3}>
+                    <TextField
+                        fullWidth
+                        label="Kod Przedmiotu"
+                        name="type"
+                        value={filters.type}
+                        onChange={handleChange}
+                        size="small"
+                    />
+                </Grid>
+
+                {/* Przycisk Resetu */}
+                <Grid item xs={12} md={2}>
+                    <Button
+                        fullWidth
+                        variant="contained"
+                        color="inherit"
+                        onClick={handleReset}
+                        startIcon={<RestartAltIcon />}
+                        sx={{
+                            height: '40px',
+                            backgroundColor: '#f5f5f5',
+                            '&:hover': { backgroundColor: '#e0e0e0' }
+                        }}
+                    >
+                        Reset
+                    </Button>
+                </Grid>
+            </Grid>
+        </Paper>
+    );
 }
