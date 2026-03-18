@@ -8,7 +8,7 @@ import CloseIcon from "@mui/icons-material/Close";
 import SaveIcon from "@mui/icons-material/Save";
 import { getFieldStyle } from "../config/Q2Validation.js";
 import { getQ2 } from "../api/getQ2Service.js";
-import { updateQ2 } from "../api/updateQ2.js";
+import { updateQ2 } from "../api/updateService.js";
 import { Q2Tabs } from "../config/Q2Fields.js";
 import { calculateNikoRAG } from "../config/Q2Calculations.js";
 

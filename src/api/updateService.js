@@ -1,26 +1,36 @@
 // src/api/updateService.js
-import axios from "axios";
+import axiosClient from "./axiosClient";
 
-// import { clearSampleCache } from "./sampleService";
-
+/**
+ * Aktualizuje rekord próbki.
+ * Używane przez: SampleEditModal
+ */
 export const updateSample = async (updatedRecord) => {
-    const API_URL = import.meta.env.VITE_API_URL;
-    console.log(API_URL);
     try {
-        const response = await axios.put(
-            `${API_URL}/api/v1/UpdateSample`,
-            updatedRecord,
-
-            {
-                headers: { "Content-Type": "application/json" }
-            }
+        const response = await axiosClient.put(
+            "/api/v1/UpdateSample",
+            updatedRecord
         );
-
         return response.data;
-
     } catch (error) {
-        console.error("❌ Błąd aktualizacji próbki:", error);
+        console.error("Błąd aktualizacji próbki:", error);
         throw error;
     }
 };
 
+/**
+ * Aktualizuje pomiary Q2 dla próbki.
+ * Używane przez: Q2Modal
+ */
+export const updateQ2 = async (updatedRecord) => {
+    try {
+        const response = await axiosClient.put(
+            "/api/v1/UpdateQ2",
+            updatedRecord
+        );
+        return response.data;
+    } catch (error) {
+        console.error("Błąd aktualizacji Q2:", error);
+        throw error;
+    }
+};

@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const axiosClient = axios.create({
-    baseURL: "https://fake-api.local", // i tak zmockujemy
+    baseURL: import.meta.env.VITE_API_URL, // i tak zmockujemy
     timeout: 5000,
 });
 

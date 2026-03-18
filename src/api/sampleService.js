@@ -1,5 +1,5 @@
 // src/api/sampleService.js
-import axios from 'axios'
+import axiosClient from "./axiosClient";
 
 
 // 1. Funkcja normalizująca klucze (pozostaje bez zmian)
@@ -25,9 +25,9 @@ const normalizeObject = (obj) => {
 export const fetchSamples = async () => {
 
     try {
-        const API_URL = import.meta.env.VITE_API_URL;
+        //const API_URL = import.meta.env.VITE_API_URL;
         // Używamy pełnego adresu zgodnie z Twoją konfiguracją
-        const res = await axios.get(`${API_URL}/api/v1/GetSample`);
+        const res = await axiosClient.get("/api/v1/GetSample");
         const raw = res.data;
 
         // Mapujemy i normalizujemy dane, dodając ID dla Material UI

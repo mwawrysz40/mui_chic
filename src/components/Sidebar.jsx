@@ -19,8 +19,8 @@ import ExpandLess from "@mui/icons-material/ExpandLess"; // 🔥 Ikona strzałki
 import ExpandMore from "@mui/icons-material/ExpandMore"; // 🔥 Ikona strzałki w dół
 
 import { useLocation, useNavigate } from "react-router-dom";
+import { DRAWER_WIDTH } from '../config/constants'
 
-const drawerWidth = 240;
 
 export default function Sidebar() {
     const navigate = useNavigate();
@@ -40,12 +40,12 @@ export default function Sidebar() {
         <Drawer
             variant="permanent"
             sx={{
-                width: drawerWidth,
+                width: DRAWER_WIDTH,
                 flexShrink: 0,
-                [`& .MuiDrawer-paper`]: {
-                    width: drawerWidth,
-                    boxSizing: "border-box"
-                }
+                '& .MuiDrawer-paper': {
+                    width: DRAWER_WIDTH,
+                    boxSizing: 'border-box',
+                },
             }}
         >
             <Toolbar />

@@ -1,32 +1,63 @@
 // src/components/ResultTable.jsx
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo, useEffect, useCallback } from "react";
 import {
     Box, Table, TableBody, TableCell, TableContainer, TableHead,
-    TableRow, Paper, IconButton, Tooltip, Button
+    TableRow, Paper, IconButton, Tooltip, Alert, Skeleton, Typography
 } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
-import FilterListIcon from "@mui/icons-material/FilterList";
-import FilterListOffIcon from "@mui/icons-material/FilterListOff";
-import { fetchWynikiProbek } from "../api/getSampleResult.js"
+import { fetchWynikiProbek } from "../api/getSampleResult.js";
 import { wynikiColumns } from "../config/resultColumns.js";
-import WynikiFilters from "./ResultFilters.jsx";
+
+const allCols = [
+    ...wynikiColumns.filter(c => !c.hidden),
+    { id: "actions", label: "Akcje", minWidth: 100, sticky: "right" }
+];
+
+// Używamy sx zamiast style — inline style ma wyższy priorytet niż klasy
+// CSS generowane przez MUI i blokowałby overrides z theme.js.
+// bgcolor ustawiamy TYLKO dla sticky kolumn (żeby wiersze nie przeświecały
+// podczas scrollowania). Zwykłe kolumny dziedziczą tło z motywu:
+// nagłówki dostają szare background.default z MuiTableCell head override.
+function getStickySx(col, index, isHeader) {
+    const isSticky = index === 0 || Boolean(col.sticky);
+    const sx = {
+        minWidth: col.minWidth,
+        position: isSticky ? "sticky" : "static",
+        left: (index === 0 || col.sticky === "left") ? 0 : undefined,
+        right: col.sticky === "right" ? 0 : undefined,
+        zIndex: isSticky ? (isHeader ? 3 : 2) : 1,
+    };
+    if (isSticky) {
+        sx.bgcolor = isHeader ? "background.default" : "background.paper";
+    }
+    return sx;
+}
 
 export default function ResultTable({ onEdit, reloadTrigger, filters }) {
     const [rows, setRows] = useState([]);
-    //const [showFilters, setShowFilters] = useState(true); // 1. Toggle filtrów
-    //const [filters, setFilters] = useState({ search: "", status: "", batch: "" });
-    const loadData = async () => {
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState(null);
+
+    const loadData = useCallback(async () => {
+        setLoading(true);
+        setError(null);
         try {
             const data = await fetchWynikiProbek();
             setRows(data);
-        } catch (err) { console.error(err); }
-    };
+        } catch (err) {
+            console.error("ResultTable fetch error:", err);
+            setError("Nie udało się pobrać wyników próbek. Sprawdź połączenie z API.");
+        } finally {
+            setLoading(false);
+        }
+    }, []);
 
-    useEffect(() => { loadData(); }, [reloadTrigger]);
+    useEffect(() => {
+        loadData();
+    }, [reloadTrigger, loadData]);
 
     const filteredRows = useMemo(() => {
         return rows.filter(r => {
-            // Dodajemy zabezpieczenie, jeśli filters byłoby chwilowo undefined
             const search = (filters?.search || "").toLowerCase();
             const batchFilter = (filters?.batch || "").toLowerCase();
 
@@ -34,99 +65,88 @@ export default function ResultTable({ onEdit, reloadTrigger, filters }) {
                 String(r.NrSample || "").toLowerCase().includes(search) ||
                 String(r.ItemName || "").toLowerCase().includes(search);
 
-            const matchesStatus = filters?.status ? r.StatusSample === filters.status : true;
+            const matchesStatus = filters?.status
+                ? r.StatusSample === filters.status
+                : true;
 
-            const matchesBatch = batchFilter ? String(r.Batch || "").toLowerCase().includes(batchFilter) : true;
+            const matchesBatch = batchFilter
+                ? String(r.Batch || "").toLowerCase().includes(batchFilter)
+                : true;
 
             return matchesSearch && matchesStatus && matchesBatch;
         });
     }, [rows, filters]);
-    // const loadData = async () => {
-    //     try {
-    //         const data = await fetchWynikiProbek();
-    //         setRows(data);
-    //     } catch (err) { console.error(err); }
-    // };
-    //
-    // useEffect(() => { loadData(); }, [reloadTrigger]);
 
-    // const filteredRows = useMemo(() => {
-    //     return rows.filter(r => {
-    //         const search = filters.search.toLowerCase();
-    //         return (
-    //             (String(r.NrSample || "").toLowerCase().includes(search) ||
-    //                 String(r.ItemName || "").toLowerCase().includes(search)) &&
-    //             (filters.status ? r.StatusSample === filters.status : true)
-    //         );
-    //     });
-    // }, [rows, filters]);
+    if (loading) {
+        return (
+            <Box sx={{ mt: 2 }}>
+                {Array.from({ length: 6 }).map((_, i) => (
+                    <Skeleton key={i} variant="rounded" height={52} sx={{ mb: 1 }} />
+                ))}
+            </Box>
+        );
+    }
 
-    // Dodajemy kolumnę akcji do konfiguracji kolumn na potrzeby renderowania
-    const allCols = [...wynikiColumns, { id: "actions", label: "Akcje", minWidth: 100, sticky: "right" }];
+    if (error) {
+        return (
+            <Alert severity="error" sx={{ mt: 2 }}>
+                {error}
+            </Alert>
+        );
+    }
+
+    if (filteredRows.length === 0) {
+        return (
+            <Box sx={{ mt: 4, textAlign: "center" }}>
+                <Alert severity="info">Brak próbek spełniających kryteria filtrowania.</Alert>
+            </Box>
+        );
+    }
 
     return (
-        <Box>
-            {/*<Box sx={{ mb: 2, display: 'flex', justifyContent: 'flex-end' }}>*/}
-            {/*    <Button*/}
-            {/*        startIcon={showFilters ? <FilterListOffIcon /> : <FilterListIcon />}*/}
-            {/*        onClick={() => setShowFilters(!showFilters)}*/}
-            {/*    >*/}
-            {/*        {showFilters ? "Ukryj filtry" : "Pokaż filtry"}*/}
-            {/*    </Button>*/}
-            {/*</Box>*/}
+        <TableContainer component={Paper} sx={{ mt: 2, maxHeight: "70vh" }}>
+            <Table stickyHeader>
 
-            {/*{showFilters && <WynikiFilters filters={filters} setFilters={setFilters} />}*/}
+                <TableHead>
+                    <TableRow>
+                        {allCols.map((col, index) => (
+                            <TableCell
+                                key={col.id}
+                                sx={getStickySx(col, index, true)}
+                            >
+                                {col.label}
+                            </TableCell>
+                        ))}
+                    </TableRow>
+                </TableHead>
 
-            <TableContainer component={Paper} sx={{ maxHeight: '70vh' }}>
-                <Table stickyHeader>
-                    <TableHead>
-                        <TableRow>
-                            {allCols.filter(c => !c.hidden).map((col, index) => (
+                <TableBody>
+                    {filteredRows.map((row) => (
+                        <TableRow key={row.ID} hover>
+                            {allCols.map((col, index) => (
                                 <TableCell
                                     key={col.id}
-                                    style={{
-                                        minWidth: col.minWidth,
-                                        // 2. Zamrażanie pierwszej (index 0) lub oznaczonej jako sticky
-                                        position: (index === 0 || col.sticky) ? "sticky" : "static",
-                                        left: (index === 0 || col.sticky === "left") ? 0 : undefined,
-                                        right: col.sticky === "right" ? 0 : undefined,
-                                        zIndex: (index === 0 || col.sticky) ? 3 : 1,
-                                        background: "#fff"
-                                    }}
+                                    sx={getStickySx(col, index, false)}
                                 >
-                                    {col.label}
+                                    {col.id === "actions" ? (
+                                        <Tooltip title="Edytuj wynik">
+                                            <IconButton
+                                                size="small"
+                                                onClick={() => onEdit(row)}
+                                            >
+                                                <EditIcon fontSize="small" />
+                                            </IconButton>
+                                        </Tooltip>
+                                    ) : (
+                                        row[col.id] ?? "-"
+                                    )}
                                 </TableCell>
                             ))}
                         </TableRow>
-                    </TableHead>
-                    <TableBody>
-                        {filteredRows.map((row) => (
-                            <TableRow key={row.ID} hover>
-                                {allCols.filter(c => !c.hidden).map((col, index) => (
-                                    <TableCell
-                                        key={col.id}
-                                        style={{
-                                            position: (index === 0 || col.sticky) ? "sticky" : "static",
-                                            left: (index === 0 || col.sticky === "left") ? 0 : undefined,
-                                            right: col.sticky === "right" ? 0 : undefined,
-                                            background: "#fff",
-                                            zIndex: (index === 0 || col.sticky) ? 2 : 1
-                                        }}
-                                    >
-                                        {col.id === "actions" ? (
-                                            <Tooltip title="Edytuj wynik">
-                                                <IconButton onClick={() => onEdit(row)}>
-                                                    <EditIcon />
-                                                </IconButton>
-                                            </Tooltip>
-                                        ) : (row[col.id] ?? "-")}
-                                    </TableCell>
-                                ))}
-                            </TableRow>
-                        ))}
-                    </TableBody>
-                </Table>
-            </TableContainer>
-        </Box>
+                    ))}
+                </TableBody>
+
+            </Table>
+        </TableContainer>
     );
 }
