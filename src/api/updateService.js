@@ -34,3 +34,30 @@ export const updateQ2 = async (updatedRecord) => {
         throw error;
     }
 };
+/**
+ * Aktualizuje wynik próbki.
+ * Używane przez: ResultEditModal
+ */
+export const updateResultSample = async (updatedRecord) => {
+    try {
+        const response = await axiosClient.put(
+            "/api/v1/UpdateResultSample",
+            updatedRecord
+        );
+        return response.data;
+    } catch (error) {
+        console.error("Błąd aktualizacji wyniku próbki:", error);
+        throw error;
+    }
+};
+export const unlockResultSample = async (id) => {
+    try {
+        const response = await axiosClient.put(
+            `/api/v1/UnlockSample/${encodeURIComponent(id)}`
+        );
+        return response.data;
+    } catch (error) {
+        console.error("Błąd odblokowania próbki:", error);
+        throw error;
+    }
+};
