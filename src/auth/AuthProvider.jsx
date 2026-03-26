@@ -11,17 +11,31 @@ export function AuthProvider({ children }) {
     const [user, setUser]                   = useState(null)
 
     useEffect(() => {
+        // Keycloak nie może być inicjalizowany więcej niż raz —
+        // w React StrictMode useEffect odpala się dwa razy w dev,
+        // więc sprawdzamy czy instancja nie jest już gotowa.
+        if (keycloak.didInitialize) {
+            setAuthenticated(keycloak.authenticated)
+            if (keycloak.authenticated) {
+                setUser({
+                    username:  keycloak.tokenParsed?.preferred_username || '',
+                    firstName: keycloak.tokenParsed?.given_name         || '',
+                    lastName:  keycloak.tokenParsed?.family_name        || '',
+                    email:     keycloak.tokenParsed?.email              || '',
+                    roles:     keycloak.tokenParsed?.realm_access?.roles || [],
+                })
+            }
+            setLoading(false)
+            return
+        }
+
         keycloak
             .init({
-                // Sprawdza czy użytkownik ma aktywną sesję SSO —
-                // jeśli tak, loguje go cicho bez redirect.
-                // Jeśli nie, przekierowuje na stronę logowania Keycloak.
-                onLoad:        'login-required',
+                onLoad:           'login-required',
                 checkLoginIframe: false,
             })
             .then((auth) => {
                 setAuthenticated(auth)
-
                 if (auth) {
                     setUser({
                         username:  keycloak.tokenParsed?.preferred_username || '',

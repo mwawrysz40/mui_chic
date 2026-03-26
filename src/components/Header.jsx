@@ -2,14 +2,15 @@ import React from 'react'
 import AppBar from '@mui/material/AppBar'
 import Toolbar from '@mui/material/Toolbar'
 import Typography from '@mui/material/Typography'
+import Logo from './Logo'
 import Box from '@mui/material/Box'
 //import logo from '../assets/logo_chic.png'
-import { useAuth } from '../auth/AuthProvider'
+//import { useAuth } from '../auth/AuthProvider'
 import UserMenu from './UserMenu'
 
 
 export default function Header() {
-    const { user } = useAuth()
+
 
     return (
         <AppBar position="fixed" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}>
@@ -34,11 +35,12 @@ export default function Header() {
                 {/*/>*/}
 
                 {/* Tytuł jako osobny element obok logo */}
-                <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1 }}>
+                <Logo size={48} />
+                <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1, ml: 1.5 }}>
                     ESL Portal
                 </Typography>
 
-                <UserMenu username={user?.username} />
+                <UserMenu />
             </Toolbar>
         </AppBar>
     )

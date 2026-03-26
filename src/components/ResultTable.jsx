@@ -11,6 +11,8 @@ import { unlockResultSample } from "../api/updateService.js";
 import { wynikiColumns } from "../config/resultColumns.js";
 import { resultFilterConfig } from "../config/resultFilterConfig.js";
 import { useFilteredRows } from "../hooks/useFilteredRows.js";
+import StatusBadge from "./StatusBadge.jsx";
+import { BADGE_COLUMNS_RESULT } from "../config/statusBadgeConfig.js";
 
 const STATUS_ZABLOKOWANY = "ZABLOKOWANY";
 
@@ -134,14 +136,14 @@ export default function ResultTable({ onEdit, reloadTrigger, filters }) {
                                                 {/* Przycisk Odblokuj — aktywny tylko gdy Status = ZABLOKOWANY */}
                                                 <Tooltip title={
                                                     row.StatusSample === STATUS_ZABLOKOWANY
-                                                        ? "Próbka nie jest zablokowana"
-                                                        : "Odblokuj próbkę"
+                                                        ? "Odblokuj próbkę"
+                                                        : "Próbka nie jest zablokowana"
                                                 }>
                                                     {/* span potrzebny żeby Tooltip działał na disabled IconButton */}
                                                     <span>
                                                         <IconButton
                                                             size="small"
-                                                            disabled={row.StatusSample === STATUS_ZABLOKOWANY || unlocking === row.ID}
+                                                            disabled={row.StatusSample !== STATUS_ZABLOKOWANY || unlocking === row.ID}
                                                             onClick={() => handleUnlock(row)}
                                                             color="warning"
                                                         >
@@ -150,6 +152,8 @@ export default function ResultTable({ onEdit, reloadTrigger, filters }) {
                                                     </span>
                                                 </Tooltip>
                                             </>
+                                        ) : BADGE_COLUMNS_RESULT.has(col.id) ? (
+                                            <StatusBadge value={row[col.id]} />
                                         ) : (
                                             row[col.id] ?? "-"
                                         )}

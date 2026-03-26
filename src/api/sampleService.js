@@ -47,28 +47,28 @@ export const fetchSamples = async () => {
 /**
  * Pobiera opcje filtrów na podstawie aktualnie pobranych danych.
  */
-export async function fetchFilterOptions() {
-    // Dzięki usunięciu cache wyżej, 'rows' zawsze będą aktualne
-    const rows = await fetchSamples();
+// export async function fetchFilterOptions() {
+//     // Dzięki usunięciu cache wyżej, 'rows' zawsze będą aktualne
+//     const rows = await fetchSamples();
+//
+//     const owners = new Set();
+//     const statuses = new Set();
+//     const types = new Set();
+//     const creates = new Set();
+//
+//     rows.forEach((r) => {
+//         // UWAGA: Upewnij się, że te nazwy pól (person, typeResarch, itemCode)
+//         // są zgodne z tym, co wychodzi z normalizeKey!
+//         if (r.person) owners.add(r.person);
+//         if (r.typeResarch) statuses.add(r.typeResarch);
+//         if (r.itemCode) types.add(r.itemCode);
+//         if (r.createAt) creates.add(r.createAt);
+//     });
 
-    const owners = new Set();
-    const statuses = new Set();
-    const types = new Set();
-    const creates = new Set();
-
-    rows.forEach((r) => {
-        // UWAGA: Upewnij się, że te nazwy pól (person, typeResarch, itemCode)
-        // są zgodne z tym, co wychodzi z normalizeKey!
-        if (r.person) owners.add(r.person);
-        if (r.typeResarch) statuses.add(r.typeResarch);
-        if (r.itemCode) types.add(r.itemCode);
-        if (r.createAt) creates.add(r.createAt);
-    });
-
-    return {
-        owners: Array.from(owners).sort(),
-        statuses: Array.from(statuses).sort(),
-        types: Array.from(types).sort(),
-        creates: Array.from(creates).sort(),
-    };
-}
+//     return {
+//         owners: Array.from(owners).sort(),
+//         statuses: Array.from(statuses).sort(),
+//         types: Array.from(types).sort(),
+//         creates: Array.from(creates).sort(),
+//     };
+// }
