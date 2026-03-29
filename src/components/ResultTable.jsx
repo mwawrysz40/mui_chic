@@ -23,17 +23,20 @@ const allCols = [
 
 function getStickySx(col, index, isHeader) {
     const isSticky = index === 0 || Boolean(col.sticky);
-    const sx = {
-        minWidth: col.minWidth,
-        position: isSticky ? "sticky" : "static",
-        left: (index === 0 || col.sticky === "left") ? 0 : undefined,
-        right: col.sticky === "right" ? 0 : undefined,
-        zIndex: isSticky ? (isHeader ? 3 : 2) : 1,
+    return {
+        minWidth:   col.minWidth,
+        position:   isSticky ? "sticky" : "static",
+        left:       (index === 0 || col.sticky === "left") ? 0 : undefined,
+        right:      col.sticky === "right" ? 0 : undefined,
+        zIndex:     isSticky ? (isHeader ? 3 : 2) : 1,
+        // Zawijanie tekstu dla nagłówków z flagą wrap
+        whiteSpace: (isHeader && col.wrap) ? "normal" : "nowrap",
+        lineHeight: (isHeader && col.wrap) ? 1.3 : undefined,
+        verticalAlign: isHeader ? "bottom" : "middle", // wyrównaj nagłówki do dołu
+        ...(isSticky && {
+            backgroundColor: isHeader ? "#faf9ff" : "#ffffff",
+        }),
     };
-    if (isSticky) {
-        sx.bgcolor = isHeader ? "background.default" : "background.paper";
-    }
-    return sx;
 }
 
 export default function ResultTable({ onEdit, reloadTrigger, filters }) {
@@ -136,14 +139,14 @@ export default function ResultTable({ onEdit, reloadTrigger, filters }) {
                                                 {/* Przycisk Odblokuj — aktywny tylko gdy Status = ZABLOKOWANY */}
                                                 <Tooltip title={
                                                     row.StatusSample === STATUS_ZABLOKOWANY
-                                                        ? "Odblokuj próbkę"
-                                                        : "Próbka nie jest zablokowana"
+                                                        ? "Próbka nie jest zablokowana"
+                                                        : "Odblokuj próbkę"
                                                 }>
                                                     {/* span potrzebny żeby Tooltip działał na disabled IconButton */}
                                                     <span>
                                                         <IconButton
                                                             size="small"
-                                                            disabled={row.StatusSample !== STATUS_ZABLOKOWANY || unlocking === row.ID}
+                                                            disabled={row.StatusSample === STATUS_ZABLOKOWANY || unlocking === row.ID}
                                                             onClick={() => handleUnlock(row)}
                                                             color="warning"
                                                         >

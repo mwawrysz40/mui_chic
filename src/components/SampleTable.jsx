@@ -20,20 +20,21 @@ import { fetchSamples } from "../api/sampleService.js";
 import { sampleColumns } from "../config/sampleColumns.js";
 import { sampleFilterConfig } from "../config/sampleFilterConfig.js";
 import { useFilteredRows } from "../hooks/useFilteredRows.js";
+import StatusBadge from "./StatusBadge.jsx";
+import { BADGE_COLUMNS_SAMPLE } from "../config/statusBadgeConfig.js";
 
 function getStickySx(col, isHeader) {
     const isSticky = Boolean(col.sticky);
-    const sx = {
+    return {
         minWidth: col.minWidth,
         position: isSticky ? "sticky" : "static",
         left: col.sticky === "left" ? 0 : undefined,
         right: col.sticky === "right" ? 0 : undefined,
         zIndex: isSticky ? (isHeader ? 3 : 2) : 1,
+        ...(isSticky && {
+            backgroundColor: isHeader ? "#faf9ff" : "#ffffff",
+        }),
     };
-    if (isSticky) {
-        sx.bgcolor = isHeader ? "background.default" : "background.paper";
-    }
-    return sx;
 }
 
 const visibleColumns = sampleColumns.filter(col => !col.hidden);
@@ -126,6 +127,8 @@ export default function SampleTable({ onEdit, filters, reloadTrigger }) {
                                                     </IconButton>
                                                 </Tooltip>
                                             </>
+                                        ) : BADGE_COLUMNS_SAMPLE.has(col.id) ? (
+                                            <StatusBadge value={row[col.id]} />
                                         ) : (
                                             row[col.id] ?? "-"
                                         )}
