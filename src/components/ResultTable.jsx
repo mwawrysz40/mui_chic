@@ -22,20 +22,33 @@ const allCols = [
 ];
 
 function getStickySx(col, index, isHeader) {
-    const isSticky = index === 0 || Boolean(col.sticky);
+    const isHorizontalSticky = index === 0 || Boolean(col.sticky);
+    const isVerticalSticky = isHeader; // Wszystkie nagłówki będą teraz przyklejane pionowo
+
     return {
         minWidth:   col.minWidth,
-        position:   isSticky ? "sticky" : "static",
+        // Element musi być sticky, jeśli klei się w poziomie LUB w pionie
+        position:   (isHorizontalSticky || isVerticalSticky) ? "sticky" : "static",
         left:       (index === 0 || col.sticky === "left") ? 0 : undefined,
         right:      col.sticky === "right" ? 0 : undefined,
-        zIndex:     isSticky ? (isHeader ? 3 : 2) : 1,
-        // Zawijanie tekstu dla nagłówków z flagą wrap
+        top:        isVerticalSticky ? 0 : undefined, // Klejenie do samej góry przy przewijaniu
+
+        // Zarządzanie warstwami (zIndex):
+        // 4 - Nagłówek, który jest też przyklejony poziomo (musi być najwyżej)
+        // 3 - Zwykły nagłówek (musi być nad przewijanymi danymi)
+        // 2 - Komórka danych przyklejona poziomo (musi być nad zwykłymi komórkami)
+        // 1 - Zwykła komórka
+        zIndex:     isHeader
+            ? (isHorizontalSticky ? 4 : 3)
+            : (isHorizontalSticky ? 2 : 1),
+
         whiteSpace: (isHeader && col.wrap) ? "normal" : "nowrap",
         lineHeight: (isHeader && col.wrap) ? 1.3 : undefined,
-        verticalAlign: isHeader ? "bottom" : "middle", // wyrównaj nagłówki do dołu
-        ...(isSticky && {
-            backgroundColor: isHeader ? "#faf9ff" : "#ffffff",
-        }),
+        verticalAlign: isHeader ? "bottom" : "middle",
+
+        // Nadanie tła dla wszystkich nagłówków jest kluczowe,
+        // inaczej przewijany tekst prześwitywałby pod spodem!
+        backgroundColor: isHeader ? "#faf9ff" : (isHorizontalSticky ? "#ffffff" : undefined),
     };
 }
 
@@ -106,7 +119,7 @@ export default function ResultTable({ onEdit, reloadTrigger, filters }) {
 
     return (
         <>
-            <TableContainer component={Paper} sx={{ mt: 2, maxHeight: "70vh" }}>
+            <TableContainer component={Paper} sx={{ mt: 2, flexGrow: 1, overflow: "auto" }} >
                 <Table stickyHeader>
 
                     <TableHead>
@@ -139,7 +152,7 @@ export default function ResultTable({ onEdit, reloadTrigger, filters }) {
                                                 {/* Przycisk Odblokuj — aktywny tylko gdy Status = ZABLOKOWANY */}
                                                 <Tooltip title={
                                                     row.StatusSample === STATUS_ZABLOKOWANY
-                                                        ? "Próbka nie jest zablokowana"
+                                                        ? "Próbka jest zablokowana"
                                                         : "Odblokuj próbkę"
                                                 }>
                                                     {/* span potrzebny żeby Tooltip działał na disabled IconButton */}

@@ -137,7 +137,7 @@ export default function Sidebar() {
                     <ListItem disablePadding>
                         <ListItemButton onClick={() => setOpenLab(!openLab)}>
                             <ListItemIcon><BiotechIcon sx={{ fontSize: 18 }} /></ListItemIcon>
-                            <ListItemText primary="Próbki i Serie" />
+                            <ListItemText primary="Próbki i Wyniki" />
                             {openLab
                                 ? <ExpandLess sx={{ fontSize: 16, color: "rgba(196,181,253,0.5)" }} />
                                 : <ExpandMore sx={{ fontSize: 16, color: "rgba(196,181,253,0.5)" }} />

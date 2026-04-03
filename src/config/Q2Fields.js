@@ -78,7 +78,7 @@ export const Q2Tabs = [
         id: "niko",
         label: "Nikotyna",
         fields: [
-            { id: "NikoM", label: "Moc nikotyny", type: "number" },
+            { id: "NikoM", label: "Moc nikotyny", type: "number",disabled: true, },
             { id: "NikoPR1", label: "Próbka 1", type: "number" },
             { id: "NikoPR2", label: "Próbka 2", type: "number" },
             { id: "NikoRAG1", label: "RAG1", type: "text", disabled: true },

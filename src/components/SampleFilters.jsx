@@ -1,5 +1,5 @@
 // src/components/SampleFilters.jsx
-import React, { useMemo } from "react";
+import React from "react";
 import {
     Box,
     TextField,
@@ -26,7 +26,7 @@ export default function SampleFilters({ filters, setFilters }) {
     const handleReset = () => {
         setFilters({
             search: "",
-            status: "",
+            // status: "",
             owner: "",
             type: "",
             create:""
@@ -55,22 +55,22 @@ export default function SampleFilters({ filters, setFilters }) {
                 </Grid>
 
                 {/* Filtr Statusu */}
-                <Grid item xs={12} md={2}>
-                    <TextField
-                        select
-                        fullWidth
-                        label="Status"
-                        name="status"
-                        value={filters.status}
-                        onChange={handleChange}
-                        size="small"
-                    >
-                        <MenuItem value="">Wszystkie</MenuItem>
-                        <MenuItem value="W TRAKCIE">W TRAKCIE</MenuItem>
-                        <MenuItem value="ZAKOŃCZONE">ZAKOŃCZONE</MenuItem>
-                        <MenuItem value="OCZEKUJE">OCZEKUJE</MenuItem>
-                    </TextField>
-                </Grid>
+                {/*<Grid item xs={12} md={2}>*/}
+                {/*    <TextField*/}
+                {/*        select*/}
+                {/*        fullWidth*/}
+                {/*        label="Status"*/}
+                {/*        name="status"*/}
+                {/*        value={filters.status}*/}
+                {/*        onChange={handleChange}*/}
+                {/*        size="small"*/}
+                {/*    >*/}
+                {/*        <MenuItem value="">Wszystkie</MenuItem>*/}
+                {/*        <MenuItem value="W TRAKCIE">W TRAKCIE</MenuItem>*/}
+                {/*        <MenuItem value="ZAKOŃCZONE">ZAKOŃCZONE</MenuItem>*/}
+                {/*        <MenuItem value="OCZEKUJE">OCZEKUJE</MenuItem>*/}
+                {/*    </TextField>*/}
+                {/*</Grid>*/}
 
                 {/* Filtr Osoby (Owner) */}
                 <Grid item xs={12} md={2}>
@@ -88,7 +88,7 @@ export default function SampleFilters({ filters, setFilters }) {
                 <Grid item xs={12} md={3}>
                     <TextField
                         fullWidth
-                        label="Kod Przedmiotu"
+                        label="Indeks"
                         name="type"
                         value={filters.type}
                         onChange={handleChange}

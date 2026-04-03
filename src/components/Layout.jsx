@@ -16,16 +16,16 @@ export default function Layout({ children }) {
             <Box
                 component="main"
                 sx={{
-                    flexGrow:   1,
-                    minWidth:   0,        // kluczowe — pozwala flexbox dziecku się kurczyć
-                    overflow:   'hidden', // main nie scrolluje — scrolluje TableContainer
-                    display:    'flex',
+                    flexGrow:      1,
+                    minWidth:      0,
+                    overflow:      'hidden',
+                    display:       'flex',
                     flexDirection: 'column',
-                    minHeight:  '100vh',
+                    height:        '100vh',
                 }}
             >
-                <Toolbar /> {/* odstęp pod fixed AppBar */}
-                <Box sx={{ flexGrow: 1, p: 3, minWidth: 0 }}>
+                <Toolbar />
+                <Box sx={{ flexGrow: 1, minWidth: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
                     {children}
                 </Box>
                 <Footer />

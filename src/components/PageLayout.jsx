@@ -18,30 +18,37 @@ export default function PageLayout({ title, filters, setFilters, FiltersComponen
     const [showFilters, setShowFilters] = useState(true);
 
     return (
-        <Box sx={{ p: 3 }}>
+        <Box sx={{ display: "flex", flexDirection: "column", height: "100%", overflow: "hidden" }}>
 
-            {/* Nagłówek + przycisk toggle filtrów */}
-            <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
-                <Typography variant="h4" sx={{ fontWeight: "bold", color: "primary.main" }}>
-                    {title}
-                </Typography>
+            {/* Sekcja stała — tytuł + filtry */}
+            <Box sx={{ flexShrink: 0, px: 3, pt: 3 }}>
 
-                <Button
-                    variant="outlined"
-                    startIcon={showFilters ? <FilterListOffIcon /> : <FilterListIcon />}
-                    onClick={() => setShowFilters(prev => !prev)}
-                >
-                    {showFilters ? "Ukryj filtry" : "Pokaż filtry"}
-                </Button>
+                {/* Nagłówek + przycisk toggle filtrów */}
+                <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
+                    <Typography variant="h4" sx={{ fontWeight: "bold", color: "primary.main" }}>
+                        {title}
+                    </Typography>
+
+                    <Button
+                        variant="outlined"
+                        startIcon={showFilters ? <FilterListOffIcon /> : <FilterListIcon />}
+                        onClick={() => setShowFilters(prev => !prev)}
+                    >
+                        {showFilters ? "Ukryj filtry" : "Pokaż filtry"}
+                    </Button>
+                </Box>
+
+                {/* Filtry — warunkowo widoczne */}
+                {showFilters && FiltersComponent && (
+                    <FiltersComponent filters={filters} setFilters={setFilters} />
+                )}
+
             </Box>
 
-            {/* Filtry — warunkowo widoczne */}
-            {showFilters && FiltersComponent && (
-                <FiltersComponent filters={filters} setFilters={setFilters} />
-            )}
-
-            {/* Tabela i modal — przekazane jako children */}
-            {children}
+            {/* Tabela — wypełnia resztę wysokości i przewija się pionowo */}
+            <Box sx={{ flexGrow: 1, px: 3, pb: 3, display: "flex", flexDirection: "column", overflow: "hidden" }}>
+                {children}
+            </Box>
 
         </Box>
     );

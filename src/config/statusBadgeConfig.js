@@ -59,6 +59,7 @@ export const BADGE_COLUMNS_RESULT = new Set([
     'AssCriterium2',
     'EvaluationGC',
     'ResultWhs',
+    'ResultGC'
 ]);
 
 // Kolumny w SampleTable które mają renderować badge

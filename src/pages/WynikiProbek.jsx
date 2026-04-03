@@ -23,7 +23,7 @@ export default function WynikiProbek() {
 
     return (
         <PageLayout
-            title="Laboratorium: Wyniki Próbek"
+            title="Laboratorium: Wyniki Analiz"
             filters={filters}
             setFilters={setFilters}
             FiltersComponent={ResultFilters}

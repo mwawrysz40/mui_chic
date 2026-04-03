@@ -28,8 +28,8 @@ export default function WynikiFilters({ filters, setFilters }) {
                 <Grid item xs={12} md={3}>
                     <TextField select fullWidth label="Status" name="status" value={filters.status} onChange={handleChange} size="small">
                         <MenuItem value="">Wszystkie</MenuItem>
-                        <MenuItem value="ZGODNY">ZGODNY</MenuItem>
-                        <MenuItem value="NIEZGODNY">NIEZGODNY</MenuItem>
+                        <MenuItem value="ZWOLNIONY">ZWOLNIONY</MenuItem>
+                        <MenuItem value="ZABLOKOWANY">ZABLOKOWANY</MenuItem>
                     </TextField>
                 </Grid>
 

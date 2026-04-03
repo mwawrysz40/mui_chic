@@ -23,17 +23,31 @@ import { useFilteredRows } from "../hooks/useFilteredRows.js";
 import StatusBadge from "./StatusBadge.jsx";
 import { BADGE_COLUMNS_SAMPLE } from "../config/statusBadgeConfig.js";
 
-function getStickySx(col, isHeader) {
-    const isSticky = Boolean(col.sticky);
+function getStickySx(col, index, isHeader) {
+    const isHorizontalSticky = index === 0 || Boolean(col.sticky);
+
     return {
-        minWidth: col.minWidth,
-        position: isSticky ? "sticky" : "static",
-        left: col.sticky === "left" ? 0 : undefined,
-        right: col.sticky === "right" ? 0 : undefined,
-        zIndex: isSticky ? (isHeader ? 3 : 2) : 1,
-        ...(isSticky && {
-            backgroundColor: isHeader ? "#faf9ff" : "#ffffff",
-        }),
+        minWidth:   col.minWidth,
+        // MUI dba o przyklejanie nagłówków w pionie, ale dla kolumn
+        // przyklejonych w poziomie musimy to wymusić
+        position:   isHorizontalSticky ? "sticky" : (isHeader ? "sticky" : "static"),
+        left:       (index === 0 || col.sticky === "left") ? 0 : undefined,
+        right:      col.sticky === "right" ? 0 : undefined,
+
+        // Z-index zarządzany warstwami:
+        // 4 - Nagłówek przyklejony w poziomie (najwyżej)
+        // 3 - Zwykły nagłówek
+        // 2 - Komórka danych przyklejona poziomo
+        // 1 - Zwykła komórka danych
+        zIndex:     isHeader
+            ? (isHorizontalSticky ? 4 : 3)
+            : (isHorizontalSticky ? 2 : 1),
+
+        whiteSpace: (isHeader && col.wrap) ? "normal" : "nowrap",
+        lineHeight: (isHeader && col.wrap) ? 1.3 : undefined,
+        verticalAlign: isHeader ? "bottom" : "middle",
+
+        backgroundColor: isHeader ? "#faf9ff" : (isHorizontalSticky ? "#ffffff" : undefined),
     };
 }
 
@@ -89,14 +103,14 @@ export default function SampleTable({ onEdit, filters, reloadTrigger }) {
     }
 
     return (
-        <Box>
-            <TableContainer component={Paper} sx={{ mt: 2 }}>
+        <Box sx={{ display: "flex", flexDirection: "column", height: "100%" }}>
+            <TableContainer component={Paper} sx={{ mt: 2, flexGrow: 1, overflow: "auto" }}>
                 <Table stickyHeader>
 
                     <TableHead>
                         <TableRow>
-                            {visibleColumns.map((col) => (
-                                <TableCell key={col.id} sx={getStickySx(col, true)}>
+                            {visibleColumns.map((col,index) => (
+                                <TableCell key={col.id} sx={getStickySx(col,index, true)}>
                                     {col.label}
                                 </TableCell>
                             ))}
@@ -106,8 +120,8 @@ export default function SampleTable({ onEdit, filters, reloadTrigger }) {
                     <TableBody>
                         {filteredRows.map((row) => (
                             <TableRow key={row.id} hover>
-                                {visibleColumns.map((col) => (
-                                    <TableCell key={col.id} sx={getStickySx(col, false)}>
+                                {visibleColumns.map((col,index) => (
+                                    <TableCell key={col.id} sx={getStickySx(col, index,false)}>
                                         {col.id === "actions" ? (
                                             <>
                                                 <Tooltip title="Edytuj rekord">
