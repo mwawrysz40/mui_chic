@@ -11,54 +11,47 @@ import { unlockResultSample } from "../api/updateService.js";
 import { wynikiColumns } from "../config/resultColumns.js";
 import { resultFilterConfig } from "../config/resultFilterConfig.js";
 import { useFilteredRows } from "../hooks/useFilteredRows.js";
+import { usePagination } from "../hooks/usePagination.js";
+import { useSorting } from "../hooks/useSorting.js";
 import StatusBadge from "./StatusBadge.jsx";
 import { BADGE_COLUMNS_RESULT } from "../config/statusBadgeConfig.js";
+import TablePaginator from "./TablePaginator.jsx";
+import SortableHeaderCell from "./SortableHeaderCell.jsx";
 
 const STATUS_ZABLOKOWANY = "ZABLOKOWANY";
 
 const allCols = [
     ...wynikiColumns.filter(c => !c.hidden),
-    { id: "actions", label: "Akcje", minWidth: 150, sticky: "right" }
+    { id: "actions", label: "Akcje", minWidth: 150, sticky: "right", sortable: false }
 ];
 
 function getStickySx(col, index, isHeader) {
     const isHorizontalSticky = index === 0 || Boolean(col.sticky);
-    const isVerticalSticky = isHeader; // Wszystkie nagłówki będą teraz przyklejane pionowo
+    const isVerticalSticky   = isHeader;
 
     return {
-        minWidth:   col.minWidth,
-        // Element musi być sticky, jeśli klei się w poziomie LUB w pionie
-        position:   (isHorizontalSticky || isVerticalSticky) ? "sticky" : "static",
-        left:       (index === 0 || col.sticky === "left") ? 0 : undefined,
-        right:      col.sticky === "right" ? 0 : undefined,
-        top:        isVerticalSticky ? 0 : undefined, // Klejenie do samej góry przy przewijaniu
-
-        // Zarządzanie warstwami (zIndex):
-        // 4 - Nagłówek, który jest też przyklejony poziomo (musi być najwyżej)
-        // 3 - Zwykły nagłówek (musi być nad przewijanymi danymi)
-        // 2 - Komórka danych przyklejona poziomo (musi być nad zwykłymi komórkami)
-        // 1 - Zwykła komórka
-        zIndex:     isHeader
+        minWidth:        col.minWidth,
+        position:        (isHorizontalSticky || isVerticalSticky) ? "sticky" : "static",
+        left:            (index === 0 || col.sticky === "left") ? 0 : undefined,
+        right:           col.sticky === "right" ? 0 : undefined,
+        top:             isVerticalSticky ? 0 : undefined,
+        zIndex:          isHeader
             ? (isHorizontalSticky ? 4 : 3)
             : (isHorizontalSticky ? 2 : 1),
-
-        whiteSpace: (isHeader && col.wrap) ? "normal" : "nowrap",
-        lineHeight: (isHeader && col.wrap) ? 1.3 : undefined,
-        verticalAlign: isHeader ? "bottom" : "middle",
-
-        // Nadanie tła dla wszystkich nagłówków jest kluczowe,
-        // inaczej przewijany tekst prześwitywałby pod spodem!
+        whiteSpace:      (isHeader && col.wrap) ? "normal" : "nowrap",
+        lineHeight:      (isHeader && col.wrap) ? 1.3 : undefined,
+        verticalAlign:   isHeader ? "bottom" : "middle",
         backgroundColor: isHeader ? "#faf9ff" : (isHorizontalSticky ? "#ffffff" : undefined),
     };
 }
 
 export default function ResultTable({ onEdit, reloadTrigger, filters }) {
-    const [rows, setRows] = useState([]);
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState(null);
-    const [unlocking, setUnlocking] = useState(null); // ID wiersza który jest właśnie odblokowywany
-    const [unlockError, setUnlockError] = useState(null);
-    const [unlockSuccess, setUnlockSuccess] = useState(false);
+    const [rows, setRows]                         = useState([]);
+    const [loading, setLoading]                   = useState(false);
+    const [error, setError]                       = useState(null);
+    const [unlocking, setUnlocking]               = useState(null);
+    const [unlockError, setUnlockError]           = useState(null);
+    const [unlockSuccess, setUnlockSuccess]       = useState(false);
 
     const loadData = useCallback(async () => {
         setLoading(true);
@@ -84,7 +77,6 @@ export default function ResultTable({ onEdit, reloadTrigger, filters }) {
         try {
             await unlockResultSample(row.Batch);
             setUnlockSuccess(true);
-            // Odśwież dane żeby status zaktualizował się w tabeli
             await loadData();
         } catch (err) {
             setUnlockError(err.message || "Nie udało się odblokować próbki.");
@@ -93,7 +85,15 @@ export default function ResultTable({ onEdit, reloadTrigger, filters }) {
         }
     };
 
+    // 1. Filtrowanie
     const filteredRows = useFilteredRows(rows, filters, resultFilterConfig);
+
+    // 2. Sortowanie (na przefiltrowanych danych)
+    const { sortedRows, sortCol, sortDir, handleSort } = useSorting(filteredRows);
+
+    // 3. Paginacja (na posortowanych danych)
+    const { page, pageSize, pageRows, totalPages, setPage, setPageSize } =
+        usePagination(sortedRows, 25);
 
     if (loading) {
         return (
@@ -119,70 +119,81 @@ export default function ResultTable({ onEdit, reloadTrigger, filters }) {
 
     return (
         <>
-            <TableContainer component={Paper} sx={{ mt: 2, flexGrow: 1, overflow: "auto" }} >
-                <Table stickyHeader>
+            <Paper sx={{ mt: 2, display: "flex", flexDirection: "column", overflow: "hidden" }}>
 
-                    <TableHead>
-                        <TableRow>
-                            {allCols.map((col, index) => (
-                                <TableCell key={col.id} sx={getStickySx(col, index, true)}>
-                                    {col.label}
-                                </TableCell>
-                            ))}
-                        </TableRow>
-                    </TableHead>
+                <TableContainer sx={{ flexGrow: 1, overflow: "auto" }}>
+                    <Table stickyHeader>
 
-                    <TableBody>
-                        {filteredRows.map((row) => (
-                            <TableRow key={row.ID} hover>
+                        <TableHead>
+                            <TableRow>
                                 {allCols.map((col, index) => (
-                                    <TableCell key={col.id} sx={getStickySx(col, index, false)}>
-                                        {col.id === "actions" ? (
-                                            <>
-                                                {/* Przycisk Edytuj */}
-                                                <Tooltip title="Edytuj wynik">
-                                                    <IconButton
-                                                        size="small"
-                                                        onClick={() => onEdit(row)}
-                                                    >
-                                                        <EditIcon fontSize="small" />
-                                                    </IconButton>
-                                                </Tooltip>
-
-                                                {/* Przycisk Odblokuj — aktywny tylko gdy Status = ZABLOKOWANY */}
-                                                <Tooltip title={
-                                                    row.StatusSample === STATUS_ZABLOKOWANY
-                                                        ? "Próbka jest zablokowana"
-                                                        : "Odblokuj próbkę"
-                                                }>
-                                                    {/* span potrzebny żeby Tooltip działał na disabled IconButton */}
-                                                    <span>
-                                                        <IconButton
-                                                            size="small"
-                                                            disabled={row.StatusSample === STATUS_ZABLOKOWANY || unlocking === row.ID}
-                                                            onClick={() => handleUnlock(row)}
-                                                            color="warning"
-                                                        >
-                                                            <LockOpenIcon fontSize="small" />
-                                                        </IconButton>
-                                                    </span>
-                                                </Tooltip>
-                                            </>
-                                        ) : BADGE_COLUMNS_RESULT.has(col.id) ? (
-                                            <StatusBadge value={row[col.id]} />
-                                        ) : (
-                                            row[col.id] ?? "-"
-                                        )}
-                                    </TableCell>
+                                    <SortableHeaderCell
+                                        key={col.id}
+                                        col={col}
+                                        stickySx={getStickySx(col, index, true)}
+                                        sortCol={sortCol}
+                                        sortDir={sortDir}
+                                        onSort={handleSort}
+                                    />
                                 ))}
                             </TableRow>
-                        ))}
-                    </TableBody>
+                        </TableHead>
 
-                </Table>
-            </TableContainer>
+                        <TableBody>
+                            {pageRows.map((row) => (
+                                <TableRow key={row.ID} hover>
+                                    {allCols.map((col, index) => (
+                                        <TableCell key={col.id} sx={getStickySx(col, index, false)}>
+                                            {col.id === "actions" ? (
+                                                <>
+                                                    <Tooltip title="Edytuj wynik">
+                                                        <IconButton size="small" onClick={() => onEdit(row)}>
+                                                            <EditIcon fontSize="small" />
+                                                        </IconButton>
+                                                    </Tooltip>
 
-            {/* Błąd odblokowania */}
+                                                    <Tooltip title={
+                                                        row.StatusSample === STATUS_ZABLOKOWANY
+                                                            ? "Próbka jest zablokowana"
+                                                            : "Odblokuj próbkę"
+                                                    }>
+                                                        <span>
+                                                            <IconButton
+                                                                size="small"
+                                                                disabled={row.StatusSample === STATUS_ZABLOKOWANY || unlocking === row.ID}
+                                                                onClick={() => handleUnlock(row)}
+                                                                color="warning"
+                                                            >
+                                                                <LockOpenIcon fontSize="small" />
+                                                            </IconButton>
+                                                        </span>
+                                                    </Tooltip>
+                                                </>
+                                            ) : BADGE_COLUMNS_RESULT.has(col.id) ? (
+                                                <StatusBadge value={row[col.id]} />
+                                            ) : (
+                                                row[col.id] ?? "-"
+                                            )}
+                                        </TableCell>
+                                    ))}
+                                </TableRow>
+                            ))}
+                        </TableBody>
+
+                    </Table>
+                </TableContainer>
+
+                <TablePaginator
+                    page={page}
+                    pageSize={pageSize}
+                    totalRows={sortedRows.length}
+                    totalPages={totalPages}
+                    setPage={setPage}
+                    setPageSize={setPageSize}
+                />
+
+            </Paper>
+
             <Snackbar
                 open={Boolean(unlockError)}
                 autoHideDuration={5000}
@@ -194,7 +205,6 @@ export default function ResultTable({ onEdit, reloadTrigger, filters }) {
                 </Alert>
             </Snackbar>
 
-            {/* Sukces odblokowania */}
             <Snackbar
                 open={unlockSuccess}
                 autoHideDuration={3000}

@@ -22,6 +22,13 @@ export const Q2Tabs = [
                 disabled: true,
             },
             {
+                id: "Component",
+                label: "Komponent",
+                type: "text",
+                disabled: true,
+            },
+
+            {
                 id: "VeryfiPersonSFG",
                 label: "Osoba weryfikująca SFG",
                 type: "text",
