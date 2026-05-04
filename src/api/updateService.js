@@ -53,7 +53,8 @@ export const updateResultSample = async (updatedRecord) => {
 export const unlockResultSample = async (id) => {
     try {
         const response = await axiosClient.put(
-            `/api/v1/UnlockSample/${encodeURIComponent(id)}`
+            `/api/v1/UnlockSample`,
+            { id }  // id w body
         );
         return response.data;
     } catch (error) {

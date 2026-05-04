@@ -114,7 +114,7 @@ export default function Sidebar() {
                             onClick={() => navigate("/")}
                         >
                             <ListItemIcon><DashboardIcon sx={{ fontSize: 18 }} /></ListItemIcon>
-                            <ListItemText primary="Pulpit Sterowniczy" />
+                            <ListItemText primary="Dashboard" />
                         </ListItemButton>
                     </ListItem>
                 </List>

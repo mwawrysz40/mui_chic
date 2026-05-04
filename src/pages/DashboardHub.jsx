@@ -44,7 +44,7 @@ export default function DashboardHub() {
     ];
 
     return (
-        <PageLayout title="Centrum Analiz">
+        <PageLayout title="Centrum Analiz" hideToggle>
             <Box sx={{ py: 2 }}>
                 <Typography variant="body1" color="text.secondary" sx={{ mb: 4 }}>
                     Wybierz moduł, aby przejść do szczegółowych danych analitycznych.

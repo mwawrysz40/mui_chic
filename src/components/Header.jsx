@@ -15,7 +15,7 @@ import { useLocation } from 'react-router-dom'
 import { useAuth } from '../auth/AuthProvider'
 
 const PAGE_TITLES = {
-    '/':       { title: 'Pulpit Sterowniczy',               sub: 'Przegląd systemu i statystyki' },
+    '/':       { title: 'Dashboard',               sub: 'Przegląd systemu i statystyki' },
     '/probki': { title: 'Ewidencja Próbek Laboratoryjnych', sub: 'Zarządzanie próbkami i seriami badawczymi' },
     '/wyniki': { title: 'Wyniki Analiz',                    sub: 'Przeglądanie i edycja wyników badań' },
 }

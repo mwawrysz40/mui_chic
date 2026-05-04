@@ -52,6 +52,7 @@ export default function ResultTable({ onEdit, reloadTrigger, filters }) {
     const [unlocking, setUnlocking]               = useState(null);
     const [unlockError, setUnlockError]           = useState(null);
     const [unlockSuccess, setUnlockSuccess]       = useState(false);
+    const [unlockedIds, setUnlockedIds] = useState(new Set());
 
     const loadData = useCallback(async () => {
         setLoading(true);
@@ -76,6 +77,7 @@ export default function ResultTable({ onEdit, reloadTrigger, filters }) {
         setUnlockError(null);
         try {
             await unlockResultSample(row.Batch);
+            setUnlockedIds(prev => new Set(prev).add(row.ID));
             setUnlockSuccess(true);
             await loadData();
         } catch (err) {
@@ -155,12 +157,14 @@ export default function ResultTable({ onEdit, reloadTrigger, filters }) {
                                                     <Tooltip title={
                                                         row.StatusSample === STATUS_ZABLOKOWANY
                                                             ? "Próbka jest zablokowana"
-                                                            : "Odblokuj próbkę"
+                                                            : unlockedIds.has(row.ID)
+                                                                ? "Próbka odblokowana"
+                                                                : "Odblokuj próbkę"
                                                     }>
                                                         <span>
                                                             <IconButton
                                                                 size="small"
-                                                                disabled={row.StatusSample === STATUS_ZABLOKOWANY || unlocking === row.ID}
+                                                                disabled={row.StatusSample === STATUS_ZABLOKOWANY || unlocking === row.ID || unlockedIds.has(row.ID)}
                                                                 onClick={() => handleUnlock(row)}
                                                                 color="warning"
                                                             >
