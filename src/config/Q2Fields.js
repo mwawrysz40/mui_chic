@@ -31,12 +31,26 @@ export const Q2Tabs = [
             {
                 id: "VeryfiPersonSFG",
                 label: "Osoba weryfikująca SFG",
-                type: "text",
+                type: "select",options: [
+                    { label: "Anna Wajs", value: "Anna Wajs" },
+                    { label: "Agnieszka Śniadecka", value: "Agnieszka Śniadecka" },
+                    { label: "Ida Cierpka-Okoń", value: "Ida Cierpka-Okoń" },
+                    { label: "Konrelia Prauzińska", value: "Konrelia Prauzińska" },
+                    { label: "Monika Ziąbka", value: "Monika Ziąbka" },
+                    { label: "Zuzanna Aleksandrowicz", value: "Zuzanna Aleksandrowicz" }
+                ]
             },
             {
                 id: "VeryfiPersonFG",
                 label: "Osoba weryfikująca FG",
-                type: "text",
+                type: "select",options: [
+                    { label: "Anna Wajs", value: "Anna Wajs" },
+                    { label: "Agnieszka Śniadecka", value: "Agnieszka Śniadecka" },
+                    { label: "Ida Cierpka-Okoń", value: "Ida Cierpka-Okoń" },
+                    { label: "Konrelia Prauzińska", value: "Konrelia Prauzińska" },
+                    { label: "Monika Ziąbka", value: "Monika Ziąbka" },
+                    { label: "Zuzanna Aleksandrowicz", value: "Zuzanna Aleksandrowicz" }
+                ]
             },
             {
                 id: "DatePacking",

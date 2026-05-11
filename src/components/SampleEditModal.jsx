@@ -61,22 +61,45 @@ export default function SampleEditModal({ open, row, onClose, onSaved }) {
                         </Alert>
                     )}
 
-                    {sampleEditFields.map((field) => (
-                        <div key={field.id}>
-                            {field.type !== "hidden" && (
+                    {sampleEditFields.map((field) => {
+                        if (field.type === "hidden") return null;
+
+                        if (field.type === "select") {
+                            return (
                                 <TextField
+                                    key={field.id}
+                                    select
                                     label={field.label}
-                                    type={field.type}
                                     fullWidth
                                     sx={{ mb: 2 }}
-                                    disabled={loading} // Blokuj pola podczas zapisu
-                                    value={formState[field.id] || ""}
+                                    disabled={loading}
+                                    value={formState[field.id] ?? ""}
                                     onChange={(e) => handleChange(field.id, e.target.value)}
                                     InputLabelProps={{ shrink: true }}
-                                />
-                            )}
-                        </div>
-                    ))}
+                                >
+                                    {(field.options ?? []).map((opt) => (
+                                        <MenuItem key={opt.value} value={opt.value}>
+                                            {opt.label}
+                                        </MenuItem>
+                                    ))}
+                                </TextField>
+                            );
+                        }
+
+                        return (
+                            <TextField
+                                key={field.id}
+                                label={field.label}
+                                type={field.type}
+                                fullWidth
+                                sx={{ mb: 2 }}
+                                disabled={loading}
+                                value={formState[field.id] ?? ""}
+                                onChange={(e) => handleChange(field.id, e.target.value)}
+                                InputLabelProps={{ shrink: true }}
+                            />
+                        );
+                    })}
                 </DialogContent>
 
                 <DialogActions>

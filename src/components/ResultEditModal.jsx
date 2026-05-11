@@ -70,9 +70,13 @@ export default function ResultEditModal({ open, row, onClose, onSaved }) {
                             rows={field.rows}
                             InputLabelProps={{ shrink: true }}
                         >
-                            {field.options?.map(opt => (
-                                <MenuItem key={opt} value={opt}>{opt}</MenuItem>
-                            ))}
+                            {field.options?.map(opt => {
+                                const val   = typeof opt === "object" ? opt.value : opt;
+                                const label = typeof opt === "object" ? opt.label : opt;
+                                return (
+                                    <MenuItem key={val} value={val}>{label}</MenuItem>
+                                );
+                            })}
                         </TextField>
                     ))}
                 </DialogContent>

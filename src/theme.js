@@ -273,6 +273,16 @@ const theme = createTheme({
                         boxShadow:       '0 4px 12px rgba(124,58,237,0.4)',
                     },
                 },
+                // Nadpisuje ogólny `contained` dla color="error"
+                containedError: {
+                    backgroundColor: COLORS.danger,
+                    color:           '#ffffff',
+                    boxShadow:       '0 2px 8px rgba(220,38,38,0.30)',
+                    '&:hover': {
+                        backgroundColor: '#b91c1c',
+                        boxShadow:       '0 4px 12px rgba(220,38,38,0.40)',
+                    },
+                },
                 outlined: {
                     borderColor:     COLORS.border,
                     color:           COLORS.textSecondary,

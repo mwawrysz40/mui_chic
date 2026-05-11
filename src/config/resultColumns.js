@@ -18,7 +18,7 @@ export const wynikiColumns = [
     { id:"PersonWerNik", label:"Osoba weryfikująca wyniki nikotyny", minWidth: 100, wrap: true },
     { id:"EvaluationGC",label:"Ocena zgodności wyniku GC", minWidth: 100, wrap: true },
     { id:"ResultWhs",label:"Wynik sprawdzenia na magazynie", minWidth: 100, wrap: true },
-    { id: "StatusSample", label: "Status", minWidth: 120 },
+    { id: "StatusSample", label: "Status partii", minWidth: 120 },
     { id: "PersonUnloc", label: "Osoba zwalniająca", minWidth: 100 },
     { id:"DateUnloc", label:"Data odblokowania SAP", minWidth: 100, wrap: true  },
     { id: "Comment", label: "Komentarz", minWidth: 200 },

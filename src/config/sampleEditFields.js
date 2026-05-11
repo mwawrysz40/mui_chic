@@ -4,7 +4,7 @@ export const sampleEditFields = [
     {
         id: "sampleNumber",
         label: "Nr. próbki",
-        type: "hidden",
+        type: "text",
     },
     {
         id: "comment",
@@ -14,7 +14,14 @@ export const sampleEditFields = [
     {
         id: "person",
         label: "Osoba rejestrująca",
-        type: "text",
+        type: "select",options: [
+            { label: "Anna Wajs", value: "Anna Wajs" },
+            { label: "Agnieszka Śniadecka", value: "Agnieszka Śniadecka" },
+            { label: "Ida Cierpka-Okoń", value: "Ida Cierpka-Okoń" },
+            { label: "Konrelia Prauzińska", value: "Konrelia Prauzińska" },
+            { label: "Monika Ziąbka", value: "Monika Ziąbka" },
+            { label: "Zuzanna Aleksandrowicz", value: "Zuzanna Aleksandrowicz" }
+        ]
     },
     {
         id: "MM/RW",
