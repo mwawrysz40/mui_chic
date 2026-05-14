@@ -234,7 +234,7 @@ export const Q2Tabs = [
             { id: "SrpA", label: "A", type: "number" },
             { id: "SrpG", label: "G", type: "number" },
             { id: "SrpDesA", label: "Opis wady A", type: "text" },
-            { id: "SrpDesB", label: "Opis wady B", type: "text" },
+            { id: "SrDesB", label: "Opis wady B", type: "text" },
         ],
     },
     {

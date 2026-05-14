@@ -32,7 +32,22 @@ export const getFieldStyle = (fieldId, value, allFormData) => {
     const val = parseFloat(value);
     if (isNaN(val)) return {};
 
-    // --- SEKCJA: WAGI ---
+    // --- SEKCJA: wysokość ---
+    const heightFields = [
+        "HeightPR1", "HeightPR2", "HeightPR3", "HeightPR4", "HeightPR5",
+        "HeightPR6", "HeightPR7", "HeightPR8", "HeightPR9", "HeightPR10",
+        "HeightPR11", "HeightPR12", "HeightPR13", "HeightPR14", "HeightPR15",
+        "HeightPR16", "HeightPR17", "HeightPR18", "HeightPR19", "HeightPR20"
+    ];
+
+    if (heightFields.includes(fieldId)) {
+        if (val >= 71) return { backgroundColor: COLORS.RED };
+        if (val > 70 && val < 71) return { backgroundColor: COLORS.YELLOW };
+        if (val >= 69.2 && val <= 70) return { backgroundColor: COLORS.GREEN };
+        if (val > 68.2 && val < 69.2) return { backgroundColor: COLORS.YELLOW };
+        if (val <= 68.2) return { backgroundColor: COLORS.RED };
+    }
+    // --- SEKCJA: waga ---
     const weightFields = [
         "WeightPR1", "WeightPR2", "WeightPR3", "WeightPR4", "WeightPR5",
         "WeightPR6", "WeightPR7", "WeightPR8", "WeightPR9", "WeightPR10",
@@ -41,11 +56,11 @@ export const getFieldStyle = (fieldId, value, allFormData) => {
     ];
 
     if (weightFields.includes(fieldId)) {
-        if (val >= 71) return { backgroundColor: COLORS.RED };
-        if (val > 70 && val < 71) return { backgroundColor: COLORS.YELLOW };
-        if (val >= 69.2 && val <= 70) return { backgroundColor: COLORS.GREEN };
-        if (val > 68.2 && val < 69.2) return { backgroundColor: COLORS.YELLOW };
-        if (val <= 68.2) return { backgroundColor: COLORS.RED };
+        if (val >= 18.3) return { backgroundColor: COLORS.RED };
+        if (val >= 18.04 && val <= 18.29) return { backgroundColor: COLORS.YELLOW };
+        if (val >= 17.55 && val <= 18.05) return { backgroundColor: COLORS.GREEN };
+        if (val >= 17.31 && val <= 17.54) return { backgroundColor: COLORS.YELLOW };
+        if (val <= 17.3) return { backgroundColor: COLORS.RED };
     }
 
     return {};

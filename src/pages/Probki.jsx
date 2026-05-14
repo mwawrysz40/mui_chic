@@ -8,9 +8,10 @@ import SampleFilters from "../components/SampleFilters";
 export default function Probki() {
     const [filters, setFilters] = useState({
         search: "",
-        status: "",
+        //status: "",
         owner: "",
-        type: ""
+        batch: "",
+        create:""
     });
     const [editRow, setEditRow] = useState(null);
     const [reload, setReload] = useState(false);

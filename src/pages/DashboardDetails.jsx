@@ -139,7 +139,7 @@ export default function DashboardDetails() {
                                         <TableCell sx={{ fontWeight: 700, backgroundColor: '#f8fafc', fontSize: '0.75rem' }}>{firstColumnHeader}</TableCell>
                                         <TableCell align="center" sx={{ backgroundColor: '#ff0000', color: 'white', fontWeight: 700, width: 75, zIndex: 11, fontSize: '0.75rem' }}>R</TableCell>
                                         <TableCell align="center" sx={{ backgroundColor: '#ffcc00', color: 'black', fontWeight: 700, width: 75, zIndex: 11, fontSize: '0.75rem' }}>A</TableCell>
-                                        <TableCell align="center" sx={{ backgroundColor: '#4472c4', color: 'white', fontWeight: 700, width: 75, zIndex: 11, fontSize: '0.75rem' }}>G</TableCell>
+                                        <TableCell align="center" sx={{ backgroundColor: '#52c444', color: 'white', fontWeight: 700, width: 75, zIndex: 11, fontSize: '0.75rem' }}>G</TableCell>
                                     </TableRow>
                                 </TableHead>
                                 <TableBody>
@@ -170,7 +170,7 @@ export default function DashboardDetails() {
 
                     <Grid item xs={12} lg={6}>
                         <Typography variant="h6" sx={{ mb: 2, fontWeight: 700, color: 'text.secondary', fontSize: '0.9rem' }}>
-                            ANALIZA WIZUALNA RAG
+                            ANALIZA WIZUALNA Q2
                         </Typography>
                         <Paper sx={{ p: 2, borderRadius: 3, height: 500, boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}>
                             <ResponsiveContainer width="100%" height="100%">
@@ -189,7 +189,7 @@ export default function DashboardDetails() {
                                     <Legend verticalAlign="top" align="center" wrapperStyle={{ paddingBottom: '10px', fontSize: '0.75rem' }} />
                                     <Bar dataKey="r" name="R" stackId="rag" fill="#ff0000" barSize={12} />
                                     <Bar dataKey="a" name="A" stackId="rag" fill="#ffcc00" barSize={12} />
-                                    <Bar dataKey="g" name="G" stackId="rag" fill="#4472c4" barSize={12} />
+                                    <Bar dataKey="g" name="G" stackId="rag" fill="#52c444" barSize={12} />
                                 </BarChart>
                             </ResponsiveContainer>
                         </Paper>

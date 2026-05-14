@@ -28,7 +28,7 @@ export default function SampleFilters({ filters, setFilters }) {
             search: "",
             // status: "",
             owner: "",
-            type: "",
+            batch: "",
             create:""
         });
     };
@@ -84,13 +84,13 @@ export default function SampleFilters({ filters, setFilters }) {
                     />
                 </Grid>
 
-                {/* Filtr Typu (ItemCode) */}
+                {/* Filtr Typu (Partia) */}
                 <Grid item xs={12} md={3}>
                     <TextField
                         fullWidth
-                        label="Indeks"
-                        name="type"
-                        value={filters.type}
+                        label="Partia"
+                        name="batch"
+                        value={filters.batch}
                         onChange={handleChange}
                         size="small"
                     />

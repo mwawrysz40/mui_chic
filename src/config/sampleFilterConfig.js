@@ -29,13 +29,13 @@ export const sampleFilterConfig = [
         match: "exact",
     },
     {
-        filterKey: "type",
-        rowKey: "itemCode",
+        filterKey: "batch",
+        rowKey: "batch",
         match: "includes",
     },
     {
         filterKey: "create",
         rowKey: "createAt",
-        match: "exact",
+        match: "includes",
     },
 ];
