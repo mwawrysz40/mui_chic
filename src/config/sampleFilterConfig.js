@@ -1,12 +1,11 @@
 // src/config/sampleFilterConfig.js
 //
 // Konfiguracja filtrowania dla tabeli Próbki.
-// Żeby dodać nowe pole filtra — wystarczy dodać wpis do tej tablicy.
-// Żeby usunąć — wystarczy usunąć lub zakomentować wpis.
 //
 // Typy dopasowania (match):
-//   "includes"  — czy pole zawiera wpisany tekst (case-insensitive)
-//   "exact"     — czy pole jest dokładnie równe wartości (np. select)
+//   "includes"   — czy pole zawiera wpisany tekst (case-insensitive)
+//   "exact"      — czy pole jest dokładnie równe wartości (np. select)
+//   "dateRange"  — filtrowanie po zakresie dat (fromKey / toKey w filters)
 //
 // filterKey  — nazwa klucza w obiekcie filtrów (ze stanu w Probki.jsx)
 // rowKey     — nazwa pola w obiekcie wiersza danych z API
@@ -15,8 +14,9 @@ export const sampleFilterConfig = [
     {
         filterKey: "search",
         match: "includesAny",
-        // includesAny sprawdza tekst we wszystkich polach wiersza
-        // rowKey nie jest potrzebny — szukamy po wszystkich wartościach
+        // Szukamy tylko po kluczowych polach — NIE po Object.values(row),
+        // bo to bottleneck przy duzych tabelach (kazdy wiersz x kazde pole).
+        rowKeys: ["sampleNumber", "itemName", "itemCode", "batch", "person", "numberOrder"],
     },
     {
         filterKey: "status",
@@ -34,8 +34,10 @@ export const sampleFilterConfig = [
         match: "includes",
     },
     {
-        filterKey: "create",
+        // Filtr zakresu dat — uzywa createFrom i createTo z filters
+        match: "dateRange",
         rowKey: "createAt",
-        match: "includes",
+        fromKey: "createFrom",
+        toKey: "createTo",
     },
 ];

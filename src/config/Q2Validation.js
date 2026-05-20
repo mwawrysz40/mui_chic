@@ -41,8 +41,8 @@ export const getFieldStyle = (fieldId, value, allFormData) => {
     ];
 
     if (heightFields.includes(fieldId)) {
-        if (val >= 71) return { backgroundColor: COLORS.RED };
-        if (val > 70 && val < 71) return { backgroundColor: COLORS.YELLOW };
+        if (val > 72) return { backgroundColor: COLORS.RED };
+        if (val > 70 && val <= 72) return { backgroundColor: COLORS.YELLOW };
         if (val >= 69.2 && val <= 70) return { backgroundColor: COLORS.GREEN };
         if (val > 68.2 && val < 69.2) return { backgroundColor: COLORS.YELLOW };
         if (val <= 68.2) return { backgroundColor: COLORS.RED };

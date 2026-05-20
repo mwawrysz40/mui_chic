@@ -3,17 +3,16 @@ import React from "react";
 import {
     Box,
     TextField,
-    MenuItem,
     Grid,
     Paper,
     Button,
     Typography
 } from "@mui/material";
 import RestartAltIcon from "@mui/icons-material/RestartAlt";
+import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
 
 export default function SampleFilters({ filters, setFilters }) {
 
-    // Funkcja obsługująca zmianę w polach tekstowych i selectach
     const handleChange = (e) => {
         const { name, value } = e.target;
         setFilters((prev) => ({
@@ -22,17 +21,15 @@ export default function SampleFilters({ filters, setFilters }) {
         }));
     };
 
-    // Funkcja czyszcząca wszystkie filtry do stanu początkowego
     const handleReset = () => {
         setFilters({
             search: "",
-            // status: "",
             owner: "",
             batch: "",
-            create:""
+            createFrom: "",
+            createTo: "",
         });
     };
-
 
     return (
         <Paper sx={{ p: 2, mb: 3, border: '1px solid #e0e0e0', boxShadow: 'none' }}>
@@ -54,24 +51,6 @@ export default function SampleFilters({ filters, setFilters }) {
                     />
                 </Grid>
 
-                {/* Filtr Statusu */}
-                {/*<Grid item xs={12} md={2}>*/}
-                {/*    <TextField*/}
-                {/*        select*/}
-                {/*        fullWidth*/}
-                {/*        label="Status"*/}
-                {/*        name="status"*/}
-                {/*        value={filters.status}*/}
-                {/*        onChange={handleChange}*/}
-                {/*        size="small"*/}
-                {/*    >*/}
-                {/*        <MenuItem value="">Wszystkie</MenuItem>*/}
-                {/*        <MenuItem value="W TRAKCIE">W TRAKCIE</MenuItem>*/}
-                {/*        <MenuItem value="ZAKOŃCZONE">ZAKOŃCZONE</MenuItem>*/}
-                {/*        <MenuItem value="OCZEKUJE">OCZEKUJE</MenuItem>*/}
-                {/*    </TextField>*/}
-                {/*</Grid>*/}
-
                 {/* Filtr Osoby (Owner) */}
                 <Grid item xs={12} md={2}>
                     <TextField
@@ -84,23 +63,13 @@ export default function SampleFilters({ filters, setFilters }) {
                     />
                 </Grid>
 
-                {/* Filtr Typu (Partia) */}
-                <Grid item xs={12} md={3}>
+                {/* Filtr Partii */}
+                <Grid item xs={12} md={2}>
                     <TextField
                         fullWidth
                         label="Partia"
                         name="batch"
                         value={filters.batch}
-                        onChange={handleChange}
-                        size="small"
-                    />
-                </Grid>
-                <Grid item xs={12} md={3}>
-                    <TextField
-                        fullWidth
-                        label="Data utworzenia"
-                        name="create"
-                        value={filters.create}
                         onChange={handleChange}
                         size="small"
                     />
@@ -118,6 +87,103 @@ export default function SampleFilters({ filters, setFilters }) {
                     >
                         Reset
                     </Button>
+                </Grid>
+
+                {/* Sekcja filtrowania po dacie utworzenia */}
+                <Grid item xs={12}>
+                    <Box
+                        sx={{
+                            mt: 0.5,
+                            p: 1.5,
+                            borderRadius: 2,
+                            background: 'linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%)',
+                            border: '1px solid #c4b5fd',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 2,
+                            flexWrap: 'wrap',
+                        }}
+                    >
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.8, minWidth: 'fit-content' }}>
+                            <CalendarMonthIcon sx={{ fontSize: 16, color: '#7c3aed' }} />
+                            <Typography
+                                variant="caption"
+                                sx={{
+                                    fontWeight: 700,
+                                    color: '#5b21b6',
+                                    textTransform: 'uppercase',
+                                    letterSpacing: '0.5px',
+                                    whiteSpace: 'nowrap',
+                                }}
+                            >
+                                Data utworzenia
+                            </Typography>
+                        </Box>
+
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, flexWrap: 'wrap', flex: 1 }}>
+                            <TextField
+                                label="Od"
+                                name="createFrom"
+                                type="date"
+                                value={filters.createFrom}
+                                onChange={handleChange}
+                                size="small"
+                                InputLabelProps={{ shrink: true }}
+                                sx={{
+                                    minWidth: 160,
+                                    backgroundColor: '#ffffff',
+                                    borderRadius: 1.5,
+                                    '& .MuiOutlinedInput-root': {
+                                        '& fieldset': { borderColor: '#c4b5fd' },
+                                        '&:hover fieldset': { borderColor: '#7c3aed' },
+                                        '&.Mui-focused fieldset': { borderColor: '#7c3aed' },
+                                    },
+                                }}
+                            />
+
+                            <Typography variant="caption" sx={{ color: '#7c3aed', fontWeight: 600 }}>—</Typography>
+
+                            <TextField
+                                label="Do"
+                                name="createTo"
+                                type="date"
+                                value={filters.createTo}
+                                onChange={handleChange}
+                                size="small"
+                                InputLabelProps={{ shrink: true }}
+                                sx={{
+                                    minWidth: 160,
+                                    backgroundColor: '#ffffff',
+                                    borderRadius: 1.5,
+                                    '& .MuiOutlinedInput-root': {
+                                        '& fieldset': { borderColor: '#c4b5fd' },
+                                        '&:hover fieldset': { borderColor: '#7c3aed' },
+                                        '&.Mui-focused fieldset': { borderColor: '#7c3aed' },
+                                    },
+                                }}
+                            />
+
+                            {(filters.createFrom || filters.createTo) && (
+                                <Button
+                                    size="small"
+                                    variant="outlined"
+                                    onClick={() => setFilters(prev => ({ ...prev, createFrom: "", createTo: "" }))}
+                                    sx={{
+                                        borderColor: '#c4b5fd',
+                                        color: '#7c3aed',
+                                        fontSize: '11px',
+                                        height: '32px',
+                                        '&:hover': {
+                                            borderColor: '#7c3aed',
+                                            backgroundColor: '#f5f3ff',
+                                        },
+                                    }}
+                                >
+                                    Wyczyść datę
+                                </Button>
+                            )}
+                        </Box>
+                    </Box>
                 </Grid>
             </Grid>
         </Paper>

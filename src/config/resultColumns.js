@@ -22,4 +22,10 @@ export const wynikiColumns = [
     { id: "PersonUnloc", label: "Osoba zwalniająca", minWidth: 100 },
     { id:"DateUnloc", label:"Data odblokowania SAP", minWidth: 100, wrap: true  },
     { id: "Comment", label: "Komentarz", minWidth: 200 },
+
+    {
+        id: "createAt",
+        label: "Data utworzenia",
+        minWidth: 120,
+    }
 ];

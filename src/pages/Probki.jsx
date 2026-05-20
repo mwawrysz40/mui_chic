@@ -11,7 +11,8 @@ export default function Probki() {
         //status: "",
         owner: "",
         batch: "",
-        create:""
+        createFrom: "",
+        createTo: "",
     });
     const [editRow, setEditRow] = useState(null);
     const [reload, setReload] = useState(false);

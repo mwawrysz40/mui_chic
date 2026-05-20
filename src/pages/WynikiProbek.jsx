@@ -9,7 +9,9 @@ export default function WynikiProbek() {
     const [filters, setFilters] = useState({
         search: "",
         status: "",
-        batch: ""
+        batch: "",
+        dateFrom: "",
+        dateTo: "",
     });
     const [editRow, setEditRow] = useState(null);
     const [reload, setReload] = useState(false);
