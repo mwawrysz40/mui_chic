@@ -11,7 +11,7 @@ export const resultFilterConfig = [
     {
         filterKey: "status",
         rowKey: "StatusSample",
-        match: "exact",
+        match: "includes",
     },
     {
         filterKey: "batch",

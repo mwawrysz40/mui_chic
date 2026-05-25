@@ -14,15 +14,16 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import Skeleton from "@mui/material/Skeleton";
 import Alert from "@mui/material/Alert";
 import InfoIcon from "@mui/icons-material/Info";
-import { Tooltip } from "@mui/material";
+import { Tooltip, Button } from "@mui/material";
 import Dialog from "@mui/material/Dialog";
 import DialogTitle from "@mui/material/DialogTitle";
 import DialogContent from "@mui/material/DialogContent";
 import DialogContentText from "@mui/material/DialogContentText";
 import DialogActions from "@mui/material/DialogActions";
-import Button from "@mui/material/Button";
 import CircularProgress from "@mui/material/CircularProgress";
+import TableChartIcon from "@mui/icons-material/TableChart";
 import Q2Modal from "./Q2Modal.jsx";
+import ExcelExportModal from "./ExcelExportModal.jsx";
 
 import { fetchSamples } from "../api/sampleService.js";
 import { deleteSample } from "../api/deleteSampleService.js";
@@ -54,27 +55,25 @@ function getStickySx(col, index, isHeader) {
     };
 }
 
-/**
- * @typedef {{ ID: string|number, nazwa?: string, [key: string]: unknown }} SampleRow
- */
-
 const visibleColumns = sampleColumns.filter(col => !col.hidden);
 
 export default function SampleTable({ onEdit, filters, reloadTrigger }) {
-    /** @type {[SampleRow[], React.Dispatch<React.SetStateAction<SampleRow[]>>]} */
     const [rows, setRows]       = useState([]);
     const [loading, setLoading] = useState(false);
-    const [error, setError]     = useState(/** @type {string|null} */ (null));
+    const [error, setError]     = useState(null);
 
     // Q2 Modal state
-    const [q2Open, setQ2Open]   = useState(false);
-    const [selectedSampleId, setSelectedSampleId] = useState(/** @type {string|number|null} */ (null));
+    const [q2Open, setQ2Open]               = useState(false);
+    const [selectedSampleId, setSelectedSampleId] = useState(null);
+
+    // Excel export modal state
+    const [excelOpen, setExcelOpen] = useState(false);
 
     // Delete dialog state
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-    const [rowToDelete, setRowToDelete]           = useState(/** @type {SampleRow|null} */ (null));
+    const [rowToDelete, setRowToDelete]           = useState(null);
     const [deleteLoading, setDeleteLoading]       = useState(false);
-    const [deleteError, setDeleteError]           = useState(/** @type {string|null} */ (null));
+    const [deleteError, setDeleteError]           = useState(null);
 
     const loadData = useCallback(async () => {
         setLoading(true);
@@ -93,7 +92,6 @@ export default function SampleTable({ onEdit, filters, reloadTrigger }) {
         void loadData();
     }, [reloadTrigger, loadData]);
 
-    // ---- Delete handlers ----
     const handleDeleteClick = (row) => {
         setRowToDelete(row);
         setDeleteError(null);
@@ -101,7 +99,7 @@ export default function SampleTable({ onEdit, filters, reloadTrigger }) {
     };
 
     const handleDeleteCancel = () => {
-        if (deleteLoading) return; // blokuj zamknięcie w trakcie usuwania
+        if (deleteLoading) return;
         setDeleteDialogOpen(false);
         setRowToDelete(null);
         setDeleteError(null);
@@ -126,10 +124,10 @@ export default function SampleTable({ onEdit, filters, reloadTrigger }) {
     // 1. Filtrowanie
     const filteredRows = useFilteredRows(rows, filters, sampleFilterConfig);
 
-    // 2. Sortowanie (na przefiltrowanych danych)
+    // 2. Sortowanie
     const { sortedRows, sortCol, sortDir, handleSort } = useSorting(filteredRows);
 
-    // 3. Paginacja (na posortowanych danych)
+    // 3. Paginacja
     const { page, pageSize, pageRows, totalPages, setPage, setPageSize } =
         usePagination(sortedRows, 25);
 
@@ -147,93 +145,107 @@ export default function SampleTable({ onEdit, filters, reloadTrigger }) {
         return <Alert severity="error" sx={{ mt: 2 }}>{error}</Alert>;
     }
 
-    if (filteredRows.length === 0) {
-        return (
-            <Box sx={{ mt: 4, textAlign: "center" }}>
-                <Alert severity="info">Brak próbek spełniających kryteria filtrowania.</Alert>
-            </Box>
-        );
-    }
-
     return (
         <Box sx={{ display: "flex", flexDirection: "column", height: "100%" }}>
-            <Paper sx={{ mt: 2, display: "flex", flexDirection: "column", flexGrow: 1, overflow: "hidden" }}>
 
-                <TableContainer sx={{ flexGrow: 1, overflow: "auto" }}>
-                    <Table stickyHeader>
+            {/* Pasek akcji nad tabelą */}
+            <Box sx={{ display: "flex", justifyContent: "flex-end", mb: 1 }}>
+                <Button
+                    variant="outlined"
+                    color="success"
+                    size="small"
+                    startIcon={<TableChartIcon />}
+                    onClick={() => setExcelOpen(true)}
+                >
+                    Pobierz Excel
+                </Button>
+            </Box>
 
-                        <TableHead>
-                            <TableRow>
-                                {visibleColumns.map((col, index) => (
-                                    <SortableHeaderCell
-                                        key={col.id}
-                                        col={col}
-                                        stickySx={getStickySx(col, index, true)}
-                                        sortCol={sortCol}
-                                        sortDir={sortDir}
-                                        onSort={handleSort}
-                                    />
-                                ))}
-                            </TableRow>
-                        </TableHead>
-
-                        <TableBody>
-                            {pageRows.map((row) => (
-                                <TableRow key={row.id} hover>
+            {filteredRows.length === 0 ? (
+                <Box sx={{ mt: 4, textAlign: "center" }}>
+                    <Alert severity="info">Brak próbek spełniających kryteria filtrowania.</Alert>
+                </Box>
+            ) : (
+                <Paper sx={{ display: "flex", flexDirection: "column", flexGrow: 1, overflow: "hidden" }}>
+                    <TableContainer sx={{ flexGrow: 1, overflow: "auto" }}>
+                        <Table stickyHeader>
+                            <TableHead>
+                                <TableRow>
                                     {visibleColumns.map((col, index) => (
-                                        <TableCell key={col.id} sx={getStickySx(col, index, false)}>
-                                            {col.id === "actions" ? (
-                                                <>
-                                                    <Tooltip title="Edytuj rekord">
-                                                        <IconButton size="small" onClick={() => onEdit(row)}>
-                                                            <EditIcon fontSize="small" />
-                                                        </IconButton>
-                                                    </Tooltip>
-                                                    <Tooltip title="Q2 – pomiary">
-                                                        <IconButton
-                                                            size="small"
-                                                            onClick={() => {
-                                                                setSelectedSampleId(row.ID);
-                                                                setQ2Open(true);
-                                                            }}
-                                                        >
-                                                            <InfoIcon fontSize="small" />
-                                                        </IconButton>
-                                                    </Tooltip>
-                                                    <Tooltip title="Usuń rekord">
-                                                        <IconButton
-                                                            size="small"
-                                                            color="error"
-                                                            onClick={() => handleDeleteClick(row)}
-                                                        >
-                                                            <DeleteIcon fontSize="small" />
-                                                        </IconButton>
-                                                    </Tooltip>
-                                                </>
-                                            ) : BADGE_COLUMNS_SAMPLE.has(col.id) ? (
-                                                <StatusBadge value={row[col.id]} />
-                                            ) : (
-                                                /** @type {React.ReactNode} */ (row[col.id]) ?? "-"
-                                            )}
-                                        </TableCell>
+                                        <SortableHeaderCell
+                                            key={col.id}
+                                            col={col}
+                                            stickySx={getStickySx(col, index, true)}
+                                            sortCol={sortCol}
+                                            sortDir={sortDir}
+                                            onSort={handleSort}
+                                        />
                                     ))}
                                 </TableRow>
-                            ))}
-                        </TableBody>
+                            </TableHead>
 
-                    </Table>
-                </TableContainer>
+                            <TableBody>
+                                {pageRows.map((row) => (
+                                    <TableRow key={row.id} hover>
+                                        {visibleColumns.map((col, index) => (
+                                            <TableCell key={col.id} sx={getStickySx(col, index, false)}>
+                                                {col.id === "actions" ? (
+                                                    <>
+                                                        <Tooltip title="Edytuj rekord">
+                                                            <IconButton size="small" onClick={() => onEdit(row)}>
+                                                                <EditIcon fontSize="small" />
+                                                            </IconButton>
+                                                        </Tooltip>
+                                                        <Tooltip title="Q2 – pomiary">
+                                                            <IconButton
+                                                                size="small"
+                                                                onClick={() => {
+                                                                    setSelectedSampleId(row.ID);
+                                                                    setQ2Open(true);
+                                                                }}
+                                                            >
+                                                                <InfoIcon fontSize="small" />
+                                                            </IconButton>
+                                                        </Tooltip>
+                                                        <Tooltip title="Usuń rekord">
+                                                            <IconButton
+                                                                size="small"
+                                                                color="error"
+                                                                onClick={() => handleDeleteClick(row)}
+                                                            >
+                                                                <DeleteIcon fontSize="small" />
+                                                            </IconButton>
+                                                        </Tooltip>
+                                                    </>
+                                                ) : BADGE_COLUMNS_SAMPLE.has(col.id) ? (
+                                                    <StatusBadge value={row[col.id]} />
+                                                ) : (
+                                                    row[col.id] ?? "-"
+                                                )}
+                                            </TableCell>
+                                        ))}
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    </TableContainer>
 
-                <TablePaginator
-                    page={page}
-                    pageSize={pageSize}
-                    totalRows={sortedRows.length}
-                    totalPages={totalPages}
-                    setPage={setPage}
-                    setPageSize={setPageSize}
-                />
+                    <TablePaginator
+                        page={page}
+                        pageSize={pageSize}
+                        totalRows={sortedRows.length}
+                        totalPages={totalPages}
+                        setPage={setPage}
+                        setPageSize={setPageSize}
+                    />
+                </Paper>
+            )}
 
-            </Paper>
+            {/* ---- Excel Export Modal ---- */}
+            <ExcelExportModal
+                open={excelOpen}
+                onClose={() => setExcelOpen(false)}
+            />
 
             {/* ---- Q2 Modal ---- */}
             <Q2Modal
@@ -243,12 +255,7 @@ export default function SampleTable({ onEdit, filters, reloadTrigger }) {
             />
 
             {/* ---- Delete Confirmation Dialog ---- */}
-            <Dialog
-                open={deleteDialogOpen}
-                onClose={handleDeleteCancel}
-                maxWidth="xs"
-                fullWidth
-            >
+            <Dialog open={deleteDialogOpen} onClose={handleDeleteCancel} maxWidth="xs" fullWidth>
                 <DialogTitle sx={{ color: "error.main" }}>
                     Potwierdzenie usunięcia
                 </DialogTitle>
@@ -262,19 +269,12 @@ export default function SampleTable({ onEdit, filters, reloadTrigger }) {
                         <br />
                         Tej operacji nie można cofnąć.
                     </DialogContentText>
-
                     {deleteError && (
-                        <Alert severity="error" sx={{ mt: 2 }}>
-                            {deleteError}
-                        </Alert>
+                        <Alert severity="error" sx={{ mt: 2 }}>{deleteError}</Alert>
                     )}
                 </DialogContent>
                 <DialogActions sx={{ px: 3, pb: 2 }}>
-                    <Button
-                        onClick={handleDeleteCancel}
-                        disabled={deleteLoading}
-                        variant="outlined"
-                    >
+                    <Button onClick={handleDeleteCancel} disabled={deleteLoading} variant="outlined">
                         Anuluj
                     </Button>
                     <Button

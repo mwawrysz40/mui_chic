@@ -10,22 +10,24 @@ export default function PageLayout({
                                        setFilters,
                                        FiltersComponent,
                                        children,
-                                       hideToggle = false // Nowy parametr, domyślnie false (przycisk widoczny)[cite: 4]
+                                       hideToggle = false,
                                    }) {
     const [showFilters, setShowFilters] = useState(true);
 
     return (
         <Box sx={{ display: "flex", flexDirection: "column", height: "100%", overflow: "hidden" }}>
-            <Box sx={{ flexShrink: 0, px: 3, pt: 3 }}>
-                <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
-                    <Typography variant="h4" sx={{ fontWeight: "bold", color: "primary.main" }}>
+
+            {/* Górna sekcja — tytuł + filtry, nie rośnie */}
+            <Box sx={{ flexShrink: 0, px: 3, pt: 2 }}>
+                <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 1.5 }}>
+                    <Typography variant="h5" sx={{ fontWeight: "bold", color: "primary.main" }}>
                         {title}
                     </Typography>
 
-                    {/* Przycisk pokazuje się tylko, jeśli hideToggle jest false */}
                     {!hideToggle && (
                         <Button
                             variant="outlined"
+                            size="small"
                             startIcon={showFilters ? <FilterListOffIcon /> : <FilterListIcon />}
                             onClick={() => setShowFilters(prev => !prev)}
                         >
@@ -39,7 +41,8 @@ export default function PageLayout({
                 )}
             </Box>
 
-            <Box sx={{ flexGrow: 1, px: 3, pb: 3, display: "flex", flexDirection: "column", overflow: "hidden" }}>
+            {/* Dolna sekcja — tabela, wypełnia całą pozostałą przestrzeń */}
+            <Box sx={{ flexGrow: 1, px: 3, pb: 1, overflow: "hidden", display: "flex", flexDirection: "column" }}>
                 {children}
             </Box>
         </Box>
