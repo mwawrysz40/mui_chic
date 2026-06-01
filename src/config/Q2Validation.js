@@ -56,11 +56,11 @@ export const getFieldStyle = (fieldId, value, allFormData) => {
     ];
 
     if (weightFields.includes(fieldId)) {
-        if (val >= 18.3) return { backgroundColor: COLORS.RED };
+        if (val > 18.5) return { backgroundColor: COLORS.RED };
         if (val >= 18.21 && val <= 18.5) return { backgroundColor: COLORS.YELLOW };
         if (val >= 17.8 && val <= 18.2) return { backgroundColor: COLORS.GREEN };
         if (val >= 17.5 && val <= 17.79) return { backgroundColor: COLORS.YELLOW };
-        if (val <= 17.5) return { backgroundColor: COLORS.RED };
+        if (val < 17.5) return { backgroundColor: COLORS.RED };
     }
 
     return {};
