@@ -6,8 +6,10 @@ import {
 } from "@mui/material";
 import { resultEditFields } from "../config/resultEditFields";
 import { updateResultSample } from "../api/updateService";
+import { useDictionary } from "../hooks/useDictionary.jsx";
 
 export default function ResultEditModal({ open, row, onClose, onSaved }) {
+    const dict = useDictionary();
     const [formData, setFormData] = useState({});
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
@@ -70,13 +72,9 @@ export default function ResultEditModal({ open, row, onClose, onSaved }) {
                             rows={field.rows}
                             InputLabelProps={{ shrink: true }}
                         >
-                            {field.options?.map(opt => {
-                                const val   = typeof opt === "object" ? opt.value : opt;
-                                const label = typeof opt === "object" ? opt.label : opt;
-                                return (
-                                    <MenuItem key={val} value={val}>{label}</MenuItem>
-                                );
-                            })}
+                            {(field.dictType ? (dict[field.dictType] ?? []) : (field.options ?? [])).map(opt => (
+                                <MenuItem key={opt.value} value={opt.value}>{opt.label}</MenuItem>
+                            ))}
                         </TextField>
                     ))}
                 </DialogContent>

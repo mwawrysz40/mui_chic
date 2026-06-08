@@ -11,6 +11,7 @@ import { getQ2 } from "../api/getQ2Service.js";
 import { updateQ2 } from "../api/updateService.js";
 import { Q2Tabs } from "../config/Q2Fields.js";
 import { calculateNikoRAG } from "../config/Q2Calculations.js";
+import { useDictionary } from "../hooks/useDictionary.jsx";
 
 /**
  * Renderuje siatkę pól formularza z opcjonalną obsługą współrzędnych.
@@ -85,6 +86,10 @@ function FieldsGrid({ fields, formData, saving, onFieldChange }) {
 
 /** Pojedyncze pole formularza — wydzielone żeby FieldsGrid był czytelny */
 function FieldInput({ field, formData, saving, onChange }) {
+    // Hook musi być wywołany przed każdym warunkowym returnem (reguły hooków).
+    // field.dictType ?? "" → "" zwraca [] z hooka, więc spacery i pola bez dictType są bezpieczne.
+    const options = useDictionary(field.dictType ?? "");
+
     if (field.type === "spacer") return <Box />;
 
     return (
@@ -102,7 +107,7 @@ function FieldInput({ field, formData, saving, onChange }) {
             }}
         >
             {field.type === "select" &&
-                field.options?.map((option) => (
+                options.map((option) => (
                     <MenuItem key={option.value} value={option.value}>
                         {option.label}
                     </MenuItem>

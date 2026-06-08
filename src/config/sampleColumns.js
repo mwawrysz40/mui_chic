@@ -28,7 +28,7 @@ export const sampleColumns = [
     },
     {
         id: "whsCode",
-        label: "Magazyn",
+        label: "Linia produkcyjna",
         minWidth: 100,
     },
     {
@@ -41,11 +41,11 @@ export const sampleColumns = [
         label: "Archiwum (szt.)",
         minWidth: 120,
     },
-    {
-        id: "typeResarch",
-        label: "Rodzaj badania",
-        minWidth: 150,
-    },
+    // {
+    //     id: "typeResarch",
+    //     label: "Rodzaj badania",
+    //     minWidth: 150,
+    // },
     {
         id: "MM/RW",
         label: "MM/RW",

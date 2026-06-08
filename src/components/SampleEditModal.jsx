@@ -1,13 +1,14 @@
 import React, { useEffect, useState } from "react";
 import { sampleEditFields } from "../config/sampleEditFields.js";
 import { updateSample } from "../api/updateService";
-// ... (zachowaj dotychczasowe importy)
+import { useDictionary } from "../hooks/useDictionary.jsx";
 import {
     Dialog, DialogTitle, DialogContent, DialogActions,
     TextField, MenuItem, Button, CircularProgress, Alert, Snackbar
 } from "@mui/material";
 
 export default function SampleEditModal({ open, row, onClose, onSaved }) {
+    const dict = useDictionary();
     const [formState, setFormState] = useState({});
     const [loading, setLoading] = useState(false); // Stan ładowania
     const [error, setError] = useState(null);       // Stan błędu
@@ -77,7 +78,7 @@ export default function SampleEditModal({ open, row, onClose, onSaved }) {
                                     onChange={(e) => handleChange(field.id, e.target.value)}
                                     InputLabelProps={{ shrink: true }}
                                 >
-                                    {(field.options ?? []).map((opt) => (
+                                    {(field.dictType ? (dict[field.dictType] ?? []) : (field.options ?? [])).map((opt) => (
                                         <MenuItem key={opt.value} value={opt.value}>
                                             {opt.label}
                                         </MenuItem>

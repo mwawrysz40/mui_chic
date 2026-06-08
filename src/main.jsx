@@ -7,16 +7,19 @@ import CssBaseline from '@mui/material/CssBaseline'
 import App from './App'
 import theme from './theme'
 import { AuthProvider } from './auth/AuthProvider'
+import { DictionaryProvider } from './hooks/useDictionary.jsx'
 
 createRoot(document.getElementById('root')).render(
     <React.StrictMode>
         <AuthProvider>
-            <ThemeProvider theme={theme}>
-                <CssBaseline />
-                <BrowserRouter>
-                    <App />
-                </BrowserRouter>
-            </ThemeProvider>
+            <DictionaryProvider>
+                <ThemeProvider theme={theme}>
+                    <CssBaseline />
+                    <BrowserRouter>
+                        <App />
+                    </BrowserRouter>
+                </ThemeProvider>
+            </DictionaryProvider>
         </AuthProvider>
     </React.StrictMode>
 )
