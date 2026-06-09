@@ -33,7 +33,7 @@ export const sampleColumns = [
     },
     {
         id: "sampleTakeNumber",
-        label: "Pobrane (szt.)",
+        label: "Chromato (szt.)",
         minWidth: 100,
     },
     {
@@ -51,11 +51,11 @@ export const sampleColumns = [
         label: "MM/RW",
         minWidth: 100,
     },
-    {
-        id: "sampleDateTake",
-        label: "Data pobrania",
-        minWidth: 120,
-    },
+    // {
+    //     id: "sampleDateTake",
+    //     label: "Data pobrania",
+    //     minWidth: 120,
+    // },
     {
         id: "expDate",
         label: "Data ważności",
