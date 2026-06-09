@@ -27,6 +27,7 @@ export const Q2Tabs = [
             // Rząd 3 — osoby weryfikujące
             { id: "VeryfiPersonSFG", label: "Osoba weryfikująca SFG", type: "select", dictType: "PERSON" },
             { id: "VeryfiPersonFG",  label: "Osoba weryfikująca FG",  type: "select", dictType: "PERSON" },
+            { id: "PersonUnloc",     label: "Osoba zwalniająca",      type: "select", dictType: "PERSON" },
 
             // Rząd 4 — status + archiwizacja
             { id: "Status",       label: "Status",                    type: "select", dictType: "STATUS"  },
@@ -53,6 +54,10 @@ export const Q2Tabs = [
             // Rząd 2 — wyniki RAG obok siebie
             { id: "NikoRAG1", label: "RAG1", type: "text", disabled: true },
             { id: "NikoRAG2", label: "RAG2", type: "text", disabled: true },
+
+            // Rząd 3 — weryfikacja GC
+            { id: "PersonWerNik", label: "Osoba weryfikująca wyniki nikotyny", type: "select", dictType: "PERSON" },
+            { id: "EvaluationGC", label: "Ocena zgodności wyniku GC",          type: "select", dictType: "STATUS" },
         ],
     },
     {
