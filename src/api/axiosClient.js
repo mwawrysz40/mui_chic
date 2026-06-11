@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const axiosClient = axios.create({
-    baseURL: import.meta.env.VITE_API_URL, // i tak zmockujemy
+    baseURL: import.meta.env.VITE_API_URL,
     timeout: 5000,
 });
 
@@ -18,8 +18,12 @@ axiosClient.interceptors.request.use(
 axiosClient.interceptors.response.use(
     (response) => response,
     (error) => {
+        // API zwraca błędy w kształcie { error: { code, message: { value } } }.
+        // Sięgamy najpierw po tę zagnieżdżoną wartość, a dopiero potem po fallbacki.
+        const data = error.response?.data;
         const message =
-            error.response?.data?.message ||
+            data?.error?.message?.value ||
+            data?.message ||
             error.message ||
             "Wystąpił nieznany błąd";
 

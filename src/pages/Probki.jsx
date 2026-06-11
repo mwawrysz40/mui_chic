@@ -8,21 +8,17 @@ import SampleFilters from "../components/SampleFilters";
 export default function Probki() {
     const [filters, setFilters] = useState({
         search: "",
-        //status: "",
         owner: "",
         batch: "",
         createFrom: "",
         createTo: "",
     });
     const [editRow, setEditRow] = useState(null);
-    const [reload, setReload] = useState(false);
 
     const handleEdit   = (row) => setEditRow(row);
     const handleClose  = () => setEditRow(null);
-    const handleSaved  = () => {
-        setReload(prev => !prev);
-        setEditRow(null);
-    };
+    // Odświeżanie danych po zapisie robi react-query (unieważnienie w mutacji).
+    const handleSaved  = () => setEditRow(null);
 
     return (
         <PageLayout
@@ -34,7 +30,6 @@ export default function Probki() {
             <SampleTable
                 onEdit={handleEdit}
                 filters={filters}
-                reloadTrigger={reload}
             />
             <SampleEditModal
                 row={editRow}

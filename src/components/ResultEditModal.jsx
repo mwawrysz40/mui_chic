@@ -5,11 +5,12 @@ import {
     Button, TextField, MenuItem, CircularProgress, Alert, Snackbar
 } from "@mui/material";
 import { resultEditFields } from "../config/resultEditFields";
-import { updateResultSample } from "../api/updateService";
+import { useUpdateResultSample } from "../hooks/queries.js";
 import { useDictionary } from "../hooks/useDictionary.jsx";
 
 export default function ResultEditModal({ open, row, onClose, onSaved }) {
     const dict = useDictionary();
+    const updateMut = useUpdateResultSample();
     const [formData, setFormData] = useState({});
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
@@ -30,7 +31,7 @@ export default function ResultEditModal({ open, row, onClose, onSaved }) {
         setLoading(true);
         setError(null);
         try {
-            await updateResultSample(formData);
+            await updateMut.mutateAsync(formData);
             setSuccess(true);
             setTimeout(() => {
                 onSaved();

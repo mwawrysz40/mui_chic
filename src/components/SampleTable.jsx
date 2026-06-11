@@ -1,5 +1,5 @@
 // src/components/SampleTable.jsx
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useState } from "react";
 import Box from "@mui/material/Box";
 import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
@@ -25,8 +25,7 @@ import TableChartIcon from "@mui/icons-material/TableChart";
 import Q2Modal from "./Q2Modal.jsx";
 import ExcelExportModal from "./ExcelExportModal.jsx";
 
-import { fetchSamples } from "../api/sampleService.js";
-import { deleteSample } from "../api/deleteSampleService.js";
+import { useSamples, useDeleteSample } from "../hooks/queries.js";
 import { sampleColumns } from "../config/sampleColumns.js";
 import { sampleFilterConfig } from "../config/sampleFilterConfig.js";
 import { useFilteredRows } from "../hooks/useFilteredRows.js";
@@ -57,10 +56,9 @@ function getStickySx(col, index, isHeader) {
 
 const visibleColumns = sampleColumns.filter(col => !col.hidden);
 
-export default function SampleTable({ onEdit, filters, reloadTrigger }) {
-    const [rows, setRows]       = useState([]);
-    const [loading, setLoading] = useState(false);
-    const [error, setError]     = useState(null);
+export default function SampleTable({ onEdit, filters }) {
+    const { data: rows = [], isLoading: loading, isError } = useSamples();
+    const deleteMut = useDeleteSample();
 
     // Q2 Modal state
     const [q2Open, setQ2Open]               = useState(false);
@@ -72,25 +70,7 @@ export default function SampleTable({ onEdit, filters, reloadTrigger }) {
     // Delete dialog state
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
     const [rowToDelete, setRowToDelete]           = useState(null);
-    const [deleteLoading, setDeleteLoading]       = useState(false);
     const [deleteError, setDeleteError]           = useState(null);
-
-    const loadData = useCallback(async () => {
-        setLoading(true);
-        setError(null);
-        try {
-            const data = await fetchSamples();
-            setRows(data);
-        } catch (_err) {
-            setError("Nie udało się pobrać danych z API.");
-        } finally {
-            setLoading(false);
-        }
-    }, []);
-
-    useEffect(() => {
-        void loadData();
-    }, [reloadTrigger, loadData]);
 
     const handleDeleteClick = (row) => {
         setRowToDelete(row);
@@ -99,7 +79,7 @@ export default function SampleTable({ onEdit, filters, reloadTrigger }) {
     };
 
     const handleDeleteCancel = () => {
-        if (deleteLoading) return;
+        if (deleteMut.isPending) return;
         setDeleteDialogOpen(false);
         setRowToDelete(null);
         setDeleteError(null);
@@ -107,17 +87,13 @@ export default function SampleTable({ onEdit, filters, reloadTrigger }) {
 
     const handleDeleteConfirm = async () => {
         if (!rowToDelete) return;
-        setDeleteLoading(true);
         setDeleteError(null);
         try {
-            await deleteSample(rowToDelete.ID);
-            setRows(prev => prev.filter(r => r.ID !== rowToDelete.ID));
+            await deleteMut.mutateAsync(rowToDelete.ID);
             setDeleteDialogOpen(false);
             setRowToDelete(null);
         } catch (err) {
             setDeleteError(err?.message || "Nie udało się usunąć rekordu.");
-        } finally {
-            setDeleteLoading(false);
         }
     };
 
@@ -141,8 +117,8 @@ export default function SampleTable({ onEdit, filters, reloadTrigger }) {
         );
     }
 
-    if (error) {
-        return <Alert severity="error" sx={{ mt: 2 }}>{error}</Alert>;
+    if (isError) {
+        return <Alert severity="error" sx={{ mt: 2 }}>Nie udało się pobrać danych z API.</Alert>;
     }
 
     return (
@@ -274,17 +250,17 @@ export default function SampleTable({ onEdit, filters, reloadTrigger }) {
                     )}
                 </DialogContent>
                 <DialogActions sx={{ px: 3, pb: 2 }}>
-                    <Button onClick={handleDeleteCancel} disabled={deleteLoading} variant="outlined">
+                    <Button onClick={handleDeleteCancel} disabled={deleteMut.isPending} variant="outlined">
                         Anuluj
                     </Button>
                     <Button
                         onClick={handleDeleteConfirm}
-                        disabled={deleteLoading}
+                        disabled={deleteMut.isPending}
                         variant="contained"
                         color="error"
-                        startIcon={deleteLoading ? <CircularProgress size={16} color="inherit" /> : <DeleteIcon />}
+                        startIcon={deleteMut.isPending ? <CircularProgress size={16} color="inherit" /> : <DeleteIcon />}
                     >
-                        {deleteLoading ? "Usuwanie…" : "Usuń"}
+                        {deleteMut.isPending ? "Usuwanie…" : "Usuń"}
                     </Button>
                 </DialogActions>
             </Dialog>

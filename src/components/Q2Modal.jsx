@@ -8,7 +8,7 @@ import CloseIcon from "@mui/icons-material/Close";
 import SaveIcon from "@mui/icons-material/Save";
 import { getFieldStyle } from "../config/Q2Validation.js";
 import { getQ2 } from "../api/getQ2Service.js";
-import { updateQ2 } from "../api/updateService.js";
+import { useUpdateQ2 } from "../hooks/queries.js";
 import { Q2Tabs } from "../config/Q2Fields.js";
 import { calculateNikoRAG } from "../config/Q2Calculations.js";
 import { useDictionary } from "../hooks/useDictionary.jsx";
@@ -125,6 +125,7 @@ export default function Q2Modal({ open, sampleId, onClose }) {
     const [error, setError] = useState(null);
     const [success, setSuccess] = useState(false);
     const [confirmCloseOpen, setConfirmCloseOpen] = useState(false);
+    const q2Mut = useUpdateQ2();
 
     useEffect(() => {
         if (!open || !sampleId) return;
@@ -165,7 +166,7 @@ export default function Q2Modal({ open, sampleId, onClose }) {
         setSaving(true);
         setError(null);
         try {
-            await updateQ2(formData);
+            await q2Mut.mutateAsync(formData);
             setSuccess(true);
             setOriginalData(formData);
         } catch (err) {

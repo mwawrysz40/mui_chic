@@ -23,10 +23,7 @@ const normalizeObject = (obj) => {
  * USUNIĘTO CACHE: Teraz funkcja zawsze pobiera świeże dane z serwera.
  */
 export const fetchSamples = async () => {
-
     try {
-        //const API_URL = import.meta.env.VITE_API_URL;
-        // Używamy pełnego adresu zgodnie z Twoją konfiguracją
         const res = await axiosClient.get("/api/v1/GetSample");
         const raw = res.data;
 

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import {
     Grid, Typography, Box, Stack, Button, useTheme,
     Breadcrumbs, Link as MuiLink, Paper, Table,
@@ -12,7 +12,7 @@ import {
 
 import PageLayout from '../components/PageLayout';
 import StatCard from '../components/dashboard/StatCard';
-import { fetchGetCheck, fetchGetDataQ2 } from '../api/getCheck';
+import { useChecks, useDataQ2 } from '../hooks/queries';
 
 const MONTHS = ["Styczeń", "Luty", "Marzec", "Kwiecień", "Maj", "Czerwiec", "Lipiec", "Sierpień", "Wrzesień", "Październik", "Listopad", "Grudzień"];
 
@@ -29,21 +29,12 @@ const PARAMETERS = [
 export default function DashboardDetails() {
     const theme = useTheme();
     const navigate = useNavigate();
-    const [checkData, setCheckData] = useState([]);
-    const [q2Data, setQ2Data] = useState([]);
-    const [loading, setLoading] = useState(true);
+    const { data: rawCheck, isLoading: loadingCheck } = useChecks();
+    const { data: rawQ2, isLoading: loadingQ2 } = useDataQ2();
+    const checkData = Array.isArray(rawCheck) ? rawCheck : [];
+    const q2Data = Array.isArray(rawQ2) ? rawQ2 : [];
+    const loading = loadingCheck || loadingQ2;
     const [activeMonth, setActiveMonth] = useState(-1);
-
-    useEffect(() => {
-        const loadAllData = async () => {
-            try {
-                const [resCheck, resQ2] = await Promise.all([fetchGetCheck(), fetchGetDataQ2()]);
-                setCheckData(Array.isArray(resCheck) ? resCheck : []);
-                setQ2Data(Array.isArray(resQ2) ? resQ2 : []);
-            } catch (err) { console.error(err); } finally { setLoading(false); }
-        };
-        loadAllData();
-    }, []);
 
     const formatPct = (val) => `${(val || 0).toFixed(1)}%`.replace('.', ',');
 

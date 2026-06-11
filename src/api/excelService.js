@@ -18,6 +18,7 @@ export async function fetchExcel(dateFrom, dateTo) {
     const response = await axiosClient.get("/api/v1/GetForExcel", {
         params,
         responseType: "blob", // kluczowe — bez tego axios potraktuje binarny plik jako tekst
+        timeout: 60_000,      // eksport (3 zapytania + budowa xlsx) bywa wolny; nadpisujemy globalne 5 s
     });
 
     return response.data; // Blob

@@ -1,13 +1,12 @@
 // src/components/ResultTable.jsx
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState } from "react";
 import {
     Box, Table, TableBody, TableCell, TableContainer, TableHead,
     TableRow, Paper, IconButton, Tooltip, Alert, Skeleton, Snackbar
 } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import LockOpenIcon from "@mui/icons-material/LockOpen";
-import { fetchWynikiProbek } from "../api/getSampleResult.js";
-import { unlockResultSample } from "../api/updateService.js";
+import { useSampleResults, useUnlockSample } from "../hooks/queries.js";
 import { wynikiColumns } from "../config/resultColumns.js";
 import { resultFilterConfig } from "../config/resultFilterConfig.js";
 import { useFilteredRows } from "../hooks/useFilteredRows.js";
@@ -45,41 +44,22 @@ function getStickySx(col, index, isHeader) {
     };
 }
 
-export default function ResultTable({ onEdit, reloadTrigger, filters }) {
-    const [rows, setRows]                         = useState([]);
-    const [loading, setLoading]                   = useState(false);
-    const [error, setError]                       = useState(null);
+export default function ResultTable({ onEdit, filters }) {
+    const { data: rows = [], isLoading: loading, isError } = useSampleResults();
+    const unlockMut = useUnlockSample();
+
     const [unlocking, setUnlocking]               = useState(null);
     const [unlockError, setUnlockError]           = useState(null);
     const [unlockSuccess, setUnlockSuccess]       = useState(false);
     const [unlockedIds, setUnlockedIds] = useState(new Set());
 
-    const loadData = useCallback(async () => {
-        setLoading(true);
-        setError(null);
-        try {
-            const data = await fetchWynikiProbek();
-            setRows(data);
-        } catch (err) {
-            console.error("ResultTable fetch error:", err);
-            setError("Nie udało się pobrać wyników próbek. Sprawdź połączenie z API.");
-        } finally {
-            setLoading(false);
-        }
-    }, []);
-
-    useEffect(() => {
-        loadData();
-    }, [reloadTrigger, loadData]);
-
     const handleUnlock = async (row) => {
         setUnlocking(row.ID);
         setUnlockError(null);
         try {
-            await unlockResultSample(row.Batch);
+            await unlockMut.mutateAsync(row.Batch);
             setUnlockedIds(prev => new Set(prev).add(row.ID));
             setUnlockSuccess(true);
-            await loadData();
         } catch (err) {
             setUnlockError(err.message || "Nie udało się odblokować próbki.");
         } finally {
@@ -107,8 +87,8 @@ export default function ResultTable({ onEdit, reloadTrigger, filters }) {
         );
     }
 
-    if (error) {
-        return <Alert severity="error" sx={{ mt: 2 }}>{error}</Alert>;
+    if (isError) {
+        return <Alert severity="error" sx={{ mt: 2 }}>Nie udało się pobrać wyników próbek. Sprawdź połączenie z API.</Alert>;
     }
 
     if (filteredRows.length === 0) {

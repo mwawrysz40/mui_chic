@@ -14,14 +14,11 @@ export default function WynikiProbek() {
         dateTo: "",
     });
     const [editRow, setEditRow] = useState(null);
-    const [reload, setReload] = useState(false);
 
     const handleEdit   = (row) => setEditRow(row);
     const handleClose  = () => setEditRow(null);
-    const handleSaved  = () => {
-        setReload(prev => !prev);
-        setEditRow(null);
-    };
+    // Odświeżanie danych po zapisie robi react-query (unieważnienie w mutacji).
+    const handleSaved  = () => setEditRow(null);
 
     return (
         <PageLayout
@@ -33,7 +30,6 @@ export default function WynikiProbek() {
             <ResultTable
                 filters={filters}
                 onEdit={handleEdit}
-                reloadTrigger={reload}
             />
             <ResultEditModal
                 open={Boolean(editRow)}

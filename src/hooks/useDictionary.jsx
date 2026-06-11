@@ -34,6 +34,7 @@ export function DictionaryProvider({ children }) {
  * useDictionary()          → cały obiekt dict { PERSON: [...], ... }.
  *                             Używaj gdy potrzebujesz wielu typów naraz (np. w mapie pól).
  */
+// eslint-disable-next-line react-refresh/only-export-components -- provider + hook celowo w jednym pliku (jak AuthProvider)
 export function useDictionary(type) {
     const { dict } = useContext(DictionaryContext);
     if (type === undefined) return dict;   // cały słownik (dla komponentów z wieloma typami)

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { sampleEditFields } from "../config/sampleEditFields.js";
-import { updateSample } from "../api/updateService";
+import { useUpdateSample } from "../hooks/queries.js";
 import { useDictionary } from "../hooks/useDictionary.jsx";
 import {
     Dialog, DialogTitle, DialogContent, DialogActions,
@@ -9,6 +9,7 @@ import {
 
 export default function SampleEditModal({ open, row, onClose, onSaved }) {
     const dict = useDictionary();
+    const updateMut = useUpdateSample();
     const [formState, setFormState] = useState({});
     const [loading, setLoading] = useState(false); // Stan ładowania
     const [error, setError] = useState(null);       // Stan błędu
@@ -27,7 +28,7 @@ export default function SampleEditModal({ open, row, onClose, onSaved }) {
         setLoading(true);
         setError(null);
         try {
-            await updateSample(formState);
+            await updateMut.mutateAsync(formState);
             setSuccess(true); // Aktywuj informację o sukcesie
 
             // Dajemy użytkownikowi chwilę na zobaczenie sukcesu przed zamknięciem
