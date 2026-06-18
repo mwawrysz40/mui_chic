@@ -10,6 +10,14 @@ import {
     unlockResultSample,
 } from "../api/updateService";
 import { deleteSample } from "../api/deleteSampleService";
+import {
+    fetchMrpFilters,
+    fetchMrpData,
+    generateMrp,
+    updateMrp,
+    createMrpOrder,
+} from "../api/mrpService";
+import { fetchEwidencje, fetchEwidencjaData } from "../api/ewidencjeService";
 
 /** Centralne klucze zapytań — jedno źródło prawdy dla cache i unieważniania. */
 export const queryKeys = {
@@ -18,6 +26,10 @@ export const queryKeys = {
     checks: ["checks"],
     dataQ2: ["dataQ2"],
     q2: (sampleId) => ["q2", sampleId],
+    mrpFilters: ["mrpFilters"],
+    mrpData: ["mrpData"],
+    ewidencje: ["ewidencje"],
+    ewidencjaData: (key, filters) => ["ewidencjaData", key, filters],
 };
 
 // ---------- Zapytania (odczyt) ----------
@@ -83,8 +95,57 @@ export function useUpdateResultSample() {
 export function useUnlockSample() {
     const qc = useQueryClient();
     return useMutation({
-        mutationFn: unlockResultSample,
+        mutationFn: ({ batch, person }) => unlockResultSample(batch, person),
         onSuccess: () => qc.invalidateQueries({ queryKey: queryKeys.sampleResults }),
+    });
+}
+
+// ---------- MRP ----------
+
+export function useMrpFilters() {
+    return useQuery({ queryKey: queryKeys.mrpFilters, queryFn: fetchMrpFilters });
+}
+
+export function useMrpData() {
+    return useQuery({ queryKey: queryKeys.mrpData, queryFn: fetchMrpData });
+}
+
+export function useGenerateMrp() {
+    const qc = useQueryClient();
+    return useMutation({
+        mutationFn: generateMrp,
+        // Wynik generowania to nowa zawartość tabeli roboczej — podmieniamy cache.
+        onSuccess: (rows) => qc.setQueryData(queryKeys.mrpData, rows),
+    });
+}
+
+export function useUpdateMrp() {
+    const qc = useQueryClient();
+    return useMutation({
+        mutationFn: updateMrp,
+        onSuccess: (_data, { ItemCode, MRP }) => {
+            qc.setQueryData(queryKeys.mrpData, (rows) =>
+                rows?.map((r) => (r.Indeks === ItemCode ? { ...r, MRP } : r)),
+            );
+        },
+    });
+}
+
+export function useCreateMrpOrder() {
+    return useMutation({ mutationFn: createMrpOrder });
+}
+
+// ---------- Ewidencje akcyzowe ----------
+
+export function useEwidencje() {
+    return useQuery({ queryKey: queryKeys.ewidencje, queryFn: fetchEwidencje });
+}
+
+export function useEwidencjaData(key, filters, enabled) {
+    return useQuery({
+        queryKey: queryKeys.ewidencjaData(key, filters),
+        queryFn: () => fetchEwidencjaData(key, filters),
+        enabled,
     });
 }
 

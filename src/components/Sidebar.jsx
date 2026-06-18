@@ -15,6 +15,9 @@ import DashboardIcon from "@mui/icons-material/Dashboard";
 import ScienceIcon from "@mui/icons-material/Science";
 import BiotechIcon from "@mui/icons-material/Biotech";
 import AssessmentIcon from "@mui/icons-material/Assessment";
+// Ikony sekcji Logistyka — ukryte na produkcji (patrz niżej)
+// import InventoryIcon from "@mui/icons-material/Inventory";
+// import ReceiptLongIcon from "@mui/icons-material/ReceiptLong";
 import ExpandLess from "@mui/icons-material/ExpandLess";
 import ExpandMore from "@mui/icons-material/ExpandMore";
 
@@ -167,6 +170,44 @@ export default function Sidebar() {
                         </List>
                     </Collapse>
                 </List>
+
+                {/* Sekcja: Logistyka — ukryta na produkcji (backend gotowy, front wyłączony) */}
+                {/*
+                <Typography sx={{
+                    fontSize:      "10px",
+                    fontWeight:    600,
+                    letterSpacing: "1px",
+                    textTransform: "uppercase",
+                    color:         "rgba(196,181,253,0.45)",
+                    px:            2.5,
+                    py:            1,
+                    mt:            1,
+                }}>
+                    Logistyka
+                </Typography>
+
+                <List disablePadding>
+                    <ListItem disablePadding>
+                        <ListItemButton
+                            selected={location.pathname === "/mrp"}
+                            onClick={() => navigate("/mrp")}
+                        >
+                            <ListItemIcon><InventoryIcon sx={{ fontSize: 18 }} /></ListItemIcon>
+                            <ListItemText primary="MRP" />
+                        </ListItemButton>
+                    </ListItem>
+
+                    <ListItem disablePadding>
+                        <ListItemButton
+                            selected={location.pathname === "/ewidencje"}
+                            onClick={() => navigate("/ewidencje")}
+                        >
+                            <ListItemIcon><ReceiptLongIcon sx={{ fontSize: 18 }} /></ListItemIcon>
+                            <ListItemText primary="Ewidencje akcyzowe" />
+                        </ListItemButton>
+                    </ListItem>
+                </List>
+                */}
             </Box>
 
             {/* ── Karta użytkownika na dole ── */}

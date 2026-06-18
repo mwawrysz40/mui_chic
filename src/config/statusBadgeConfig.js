@@ -15,11 +15,6 @@ export const STATUS_COLORS = {
         bg:     '#f0fdf4',
         border: '#bbf7d0',
     },
-    'ZATWIERDZONY': {
-        color:  '#16a34a',
-        bg:     '#f0fdf4',
-        border: '#bbf7d0',
-    },
     'ZGODNY': {
         color:  '#16a34a',
         bg:     '#f0fdf4',
@@ -60,12 +55,8 @@ export const STATUS_COLORS = {
 // Dodaj tu id kolumny z resultColumns.js jeśli chcesz badge dla nowej kolumny.
 export const BADGE_COLUMNS_RESULT = new Set([
     'StatusSample',
-    "StatusSap",
-    'AssCriterium1',
-    'AssCriterium2',
     'EvaluationGC',
     'ResultWhs',
-    'ResultGC'
 ]);
 
 // Kolumny w SampleTable które mają renderować badge

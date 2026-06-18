@@ -50,11 +50,11 @@ export const updateResultSample = async (updatedRecord) => {
         throw error;
     }
 };
-export const unlockResultSample = async (id) => {
+export const unlockResultSample = async (id, person) => {
     try {
         const response = await axiosClient.put(
             `/api/v1/UnlockSample`,
-            { id }  // id w body
+            { id, person }  // id partii + osoba zwalniająca (zalogowany użytkownik)
         );
         return response.data;
     } catch (error) {

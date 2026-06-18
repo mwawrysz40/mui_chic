@@ -6,12 +6,25 @@ import {
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import SaveIcon from "@mui/icons-material/Save";
+import AddIcon from "@mui/icons-material/Add";
+import DeleteIcon from "@mui/icons-material/Delete";
 import { getFieldStyle } from "../config/Q2Validation.js";
 import { getQ2 } from "../api/getQ2Service.js";
 import { useUpdateQ2 } from "../hooks/queries.js";
 import { Q2Tabs } from "../config/Q2Fields.js";
-import { calculateNikoRAG } from "../config/Q2Calculations.js";
+import {
+    Q2_COMPONENT_TABS,
+    componentInstanceFields,
+    emptyComponentInstance,
+} from "../config/Q2ComponentTabs.js";
+import { calculateNikoRAG, computeNikoDerived } from "../config/Q2Calculations.js";
 import { useDictionary } from "../hooks/useDictionary.jsx";
+
+// Pełna lista zakładek: 4 płaskie (Q2Tabs) + 12 komponentów (model instancji).
+const ALL_TABS = [
+    ...Q2Tabs.map((t) => ({ id: t.id, label: t.label, kind: "flat", tab: t })),
+    ...Q2_COMPONENT_TABS.map((c) => ({ id: c.key, label: c.label, kind: "component", comp: c })),
+];
 
 /**
  * Renderuje siatkę pól formularza z opcjonalną obsługą współrzędnych.
@@ -116,6 +129,65 @@ function FieldInput({ field, formData, saving, onChange }) {
     );
 }
 
+/** Lista instancji jednego komponentu opakowania + przycisk dodawania/usuwania. */
+function ComponentInstances({ comp, components, saving, onAdd, onRemove, onChange }) {
+    const fields = componentInstanceFields(comp);
+    // Zachowujemy oryginalny indeks w tablicy components (do edycji/usuwania).
+    const entries = components
+        .map((c, idx) => ({ c, idx }))
+        .filter((e) => e.c.Component === comp.key);
+
+    return (
+        <Box>
+            <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
+                <Typography variant="subtitle1">
+                    {comp.label} — instancje: {entries.length}
+                </Typography>
+                <Button
+                    startIcon={<AddIcon />}
+                    onClick={() => onAdd(comp.key)}
+                    disabled={saving}
+                    variant="outlined"
+                    size="small"
+                >
+                    Dodaj instancję
+                </Button>
+            </Box>
+
+            {entries.length === 0 && (
+                <Typography variant="body2" color="text.secondary">
+                    Brak instancji. Użyj „Dodaj instancję”, aby dodać pomiar tego komponentu.
+                </Typography>
+            )}
+
+            {entries.map(({ c, idx }, n) => (
+                <Box key={idx} sx={{ border: 1, borderColor: "divider", borderRadius: 1, p: 2, mb: 2 }}>
+                    <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 1 }}>
+                        <Typography variant="caption" color="text.secondary">
+                            Instancja #{n + 1}
+                        </Typography>
+                        <IconButton size="small" color="error" onClick={() => onRemove(idx)} disabled={saving}>
+                            <DeleteIcon fontSize="small" />
+                        </IconButton>
+                    </Box>
+                    <Grid container spacing={2}>
+                        {fields.map((field) => (
+                            <Grid item xs={12} sm={6} md={field.type === "text" ? 6 : 3} key={field.id}>
+                                <FieldInput
+                                    field={field}
+                                    formData={c}
+                                    saving={saving}
+                                    onChange={(fid, val) => onChange(idx, fid, val)}
+                                />
+                            </Grid>
+                        ))}
+                    </Grid>
+                </Box>
+            ))}
+        </Box>
+    );
+}
+
 export default function Q2Modal({ open, sampleId, onClose }) {
     const [loading, setLoading] = useState(false);
     const [saving, setSaving] = useState(false);
@@ -135,7 +207,12 @@ export default function Q2Modal({ open, sampleId, onClose }) {
             setError(null);
             try {
                 const data = await getQ2(sampleId);
-                const record = data[0] || {};
+                const raw = data[0] || {};
+                // Pola pochodne (Średnia, Kryteria) liczone i wstrzyknięte do obu
+                // stanów — żeby nie generowały fałszywego "niezapisane zmiany".
+                const record = { ...raw, ...computeNikoDerived(raw) };
+                // components[] (instancje 12 komponentów) — zawsze tablica.
+                record.components = Array.isArray(raw.components) ? raw.components : [];
                 setFormData(record);
                 setOriginalData(record);
             } catch (err) {
@@ -155,10 +232,34 @@ export default function Q2Modal({ open, sampleId, onClose }) {
         setFormData((prev) => {
             const newData = { ...prev, [field]: value };
             if (field === "NikoM" || field === "NikoPR1" || field === "NikoPR2") {
-                newData.NikoRAG1 = calculateNikoRAG(newData.NikoM, newData.NikoPR1, "NikoPR1");
-                newData.NikoRAG2 = calculateNikoRAG(newData.NikoM, newData.NikoPR2, "NikoPR2");
+                newData.NikoRAG1 = calculateNikoRAG(newData.NikoM, newData.NikoPR1, "NikoPR1", newData.ItemCode);
+                newData.NikoRAG2 = calculateNikoRAG(newData.NikoM, newData.NikoPR2, "NikoPR2", newData.ItemCode);
+                Object.assign(newData, computeNikoDerived(newData));
             }
             return newData;
+        });
+    };
+
+    // --- Instancje komponentów (model child _ESL_Q2_Component) ---
+    const addInstance = (compKey) => {
+        setFormData((prev) => ({
+            ...prev,
+            components: [...(prev.components ?? []), emptyComponentInstance(compKey)],
+        }));
+    };
+
+    const removeInstance = (globalIdx) => {
+        setFormData((prev) => ({
+            ...prev,
+            components: (prev.components ?? []).filter((_, i) => i !== globalIdx),
+        }));
+    };
+
+    const updateInstance = (globalIdx, field, value) => {
+        setFormData((prev) => {
+            const next = [...(prev.components ?? [])];
+            next[globalIdx] = { ...next[globalIdx], [field]: value };
+            return { ...prev, components: next };
         });
     };
 
@@ -221,24 +322,36 @@ export default function Q2Modal({ open, sampleId, onClose }) {
                             <Tabs
                                 value={tabIndex}
                                 onChange={handleTabChange}
+                                variant="scrollable"
+                                scrollButtons="auto"
                                 sx={{ borderBottom: 1, borderColor: "divider", mb: 2 }}
                             >
-                                {Q2Tabs.map((tab) => (
+                                {ALL_TABS.map((tab) => (
                                     <Tab key={tab.id} label={tab.label} />
                                 ))}
                             </Tabs>
 
                             {formData &&
-                                Q2Tabs.map((tab, idx) => (
+                                ALL_TABS.map((tab, idx) => (
                                     <div key={tab.id} hidden={tabIndex !== idx}>
-                                        {tabIndex === idx && (
-                                            <FieldsGrid
-                                                fields={tab.fields}
-                                                formData={formData}
-                                                saving={saving}
-                                                onFieldChange={handleChange}
-                                            />
-                                        )}
+                                        {tabIndex === idx &&
+                                            (tab.kind === "flat" ? (
+                                                <FieldsGrid
+                                                    fields={tab.tab.fields}
+                                                    formData={formData}
+                                                    saving={saving}
+                                                    onFieldChange={handleChange}
+                                                />
+                                            ) : (
+                                                <ComponentInstances
+                                                    comp={tab.comp}
+                                                    components={formData.components ?? []}
+                                                    saving={saving}
+                                                    onAdd={addInstance}
+                                                    onRemove={removeInstance}
+                                                    onChange={updateInstance}
+                                                />
+                                            ))}
                                     </div>
                                 ))}
                         </>

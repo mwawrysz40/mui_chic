@@ -23,6 +23,7 @@ export function AuthProvider({ children }) {
                     lastName:  keycloak.tokenParsed?.family_name        || '',
                     email:     keycloak.tokenParsed?.email              || '',
                     roles:     keycloak.tokenParsed?.realm_access?.roles || [],
+                    groups:    keycloak.tokenParsed?.groups              || [],
                 })
             }
             setLoading(false)
@@ -43,6 +44,7 @@ export function AuthProvider({ children }) {
                         lastName:  keycloak.tokenParsed?.family_name        || '',
                         email:     keycloak.tokenParsed?.email              || '',
                         roles:     keycloak.tokenParsed?.realm_access?.roles || [],
+                        groups:    keycloak.tokenParsed?.groups              || [],
                     })
                 }
             })

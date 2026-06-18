@@ -103,7 +103,7 @@ export default function Header() {
                             color:     'text.secondary',
                             lineHeight: 1.2,
                         }}>
-                            {user?.email || 'Laborant'}
+                            {user?.groups?.[0] || 'Laborant'}
                         </Typography>
                     </Box>
 

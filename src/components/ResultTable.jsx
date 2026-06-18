@@ -16,6 +16,7 @@ import StatusBadge from "./StatusBadge.jsx";
 import { BADGE_COLUMNS_RESULT } from "../config/statusBadgeConfig.js";
 import TablePaginator from "./TablePaginator.jsx";
 import SortableHeaderCell from "./SortableHeaderCell.jsx";
+import { useAuth } from "../auth/AuthProvider";
 
 const STATUS_ZABLOKOWANY = "ZABLOKOWANY";
 
@@ -47,6 +48,7 @@ function getStickySx(col, index, isHeader) {
 export default function ResultTable({ onEdit, filters }) {
     const { data: rows = [], isLoading: loading, isError } = useSampleResults();
     const unlockMut = useUnlockSample();
+    const { user } = useAuth();
 
     const [unlocking, setUnlocking]               = useState(null);
     const [unlockError, setUnlockError]           = useState(null);
@@ -57,7 +59,8 @@ export default function ResultTable({ onEdit, filters }) {
         setUnlocking(row.ID);
         setUnlockError(null);
         try {
-            await unlockMut.mutateAsync(row.Batch);
+            const person = `${user?.firstName ?? ""} ${user?.lastName ?? ""}`.trim();
+            await unlockMut.mutateAsync({ batch: row.Batch, person });
             setUnlockedIds(prev => new Set(prev).add(row.ID));
             setUnlockSuccess(true);
         } catch (err) {

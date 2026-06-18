@@ -28,12 +28,12 @@ export const sampleColumns = [
     },
     {
         id: "whsCode",
-        label: "Linia produkcyjna",
+        label: "Magazyn",
         minWidth: 100,
     },
     {
         id: "sampleTakeNumber",
-        label: "Chromato (szt.)",
+        label: "Pobrane (szt.)",
         minWidth: 100,
     },
     {
@@ -41,21 +41,21 @@ export const sampleColumns = [
         label: "Archiwum (szt.)",
         minWidth: 120,
     },
-    // {
-    //     id: "typeResarch",
-    //     label: "Rodzaj badania",
-    //     minWidth: 150,
-    // },
+    {
+        id: "typeResarch",
+        label: "Rodzaj badania",
+        minWidth: 150,
+    },
     {
         id: "MM/RW",
         label: "MM/RW",
         minWidth: 100,
     },
-    // {
-    //     id: "sampleDateTake",
-    //     label: "Data pobrania",
-    //     minWidth: 120,
-    // },
+    {
+        id: "sampleDateTake",
+        label: "Data pobrania",
+        minWidth: 120,
+    },
     {
         id: "expDate",
         label: "Data ważności",
