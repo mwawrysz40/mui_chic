@@ -33,7 +33,7 @@ export const sampleColumns = [
     },
     {
         id: "sampleTakeNumber",
-        label: "Pobrane (szt.)",
+        label: "Chromato (szt.)",
         minWidth: 100,
     },
     {
