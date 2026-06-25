@@ -31,6 +31,8 @@ export const Q2Tabs = [
             // Rząd 3 — osoby weryfikujące
             { id: "VeryfiPersonSFG", label: "Osoba weryfikująca SFG", type: "select", dictType: "PERSON" },
             { id: "VeryfiPersonFG",  label: "Osoba weryfikująca FG",  type: "select", dictType: "PERSON" },
+            // Druga (opcjonalna) osoba weryfikująca FG — ten sam słownik PERSON.
+            { id: "VeryfiPersonFG2", label: "Osoba weryfikująca FG 2", type: "select", dictType: "PERSON" },
             // Uzupełniane automatycznie przy odblokowaniu (imię i nazwisko zalogowanego) — tylko do odczytu.
             { id: "PersonUnloc",     label: "Osoba zwalniająca",      type: "text",   disabled: true },
 

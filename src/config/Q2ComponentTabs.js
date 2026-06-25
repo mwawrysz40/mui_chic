@@ -10,6 +10,8 @@
 // `defects`  — czy komponent ma wady A/B (Kategoria + Opis),
 // `catDictA/B` — słowniki kategorii wad (jak w starych zakładkach),
 // `flag`     — opcjonalne pole tak/nie (Glue/Leaflet) → kolumna Flag.
+// `selects`  — dodatkowe listy rozwijane komponentu (np. Rodzaj zabezpieczenia
+//              klejenia → kolumna ProtectType). Każdy wpis: { id, label, dict }.
 
 export const Q2_COMPONENT_TABS = [
     { key: "Dropp",      label: "Kroplomierz",             defects: true,  catDictA: "DEFECT_DROPP_A",   catDictB: "DEFECT_DROPP_B" },
@@ -22,7 +24,7 @@ export const Q2_COMPONENT_TABS = [
     { key: "Ctn",        label: "Opakowanie jednostkowe",  defects: true,  catDictA: "DEFECT_CTN_A",     catDictB: "DEFECT_CTN_B" },
     { key: "Srp",        label: "Opakowanie zbiorcze",     defects: true,  catDictA: "DEFECT_SRP_A",     catDictB: "DEFECT_SRP_B" },
     { key: "TaxStamp",   label: "Banderola",               defects: true,  catDictA: "DEFECT_STAMP_A",   catDictB: "DEFECT_STAMP_B" },
-    { key: "Glue",       label: "Klejenie opakowania",     defects: false, flag: { label: "tak/nie", dict: "TAK_NIE" } },
+    { key: "Glue",       label: "Klejenie opakowania",     defects: false, flag: { label: "tak/nie", dict: "TAK_NIE" }, selects: [{ id: "ProtectType", label: "Rodzaj zabezpieczenia", dict: "PROTECT_TYPE" }] },
     { key: "Leaflet",    label: "Ulotka",                  defects: true,  catDictA: "DEFECT_LEAFLET_A", catDictB: "DEFECT_LEAFLET_B", flag: { label: "tak/nie", dict: "TAK_NIE" } },
 ];
 
@@ -44,6 +46,11 @@ export function componentInstanceFields(comp) {
     if (comp.flag) {
         fields.push({ id: "Flag", label: comp.flag.label, type: "select", dictType: comp.flag.dict });
     }
+    if (comp.selects) {
+        for (const s of comp.selects) {
+            fields.push({ id: s.id, label: s.label, type: "select", dictType: s.dict });
+        }
+    }
     return fields;
 }
 
@@ -55,5 +62,6 @@ export function emptyComponentInstance(key) {
         CategoryA: "", CategoryB: "",
         DescriptionA: "", DescriptionB: "",
         Flag: "",
+        ProtectType: "",
     };
 }
