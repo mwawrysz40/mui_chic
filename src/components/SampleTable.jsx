@@ -1,5 +1,5 @@
 // src/components/SampleTable.jsx
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import Box from "@mui/material/Box";
 import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
@@ -27,10 +27,8 @@ import ExcelExportModal from "./ExcelExportModal.jsx";
 
 import { useSamples, useDeleteSample } from "../hooks/queries.js";
 import { sampleColumns } from "../config/sampleColumns.js";
-import { sampleFilterConfig } from "../config/sampleFilterConfig.js";
-import { useFilteredRows } from "../hooks/useFilteredRows.js";
-import { usePagination } from "../hooks/usePagination.js";
-import { useSorting } from "../hooks/useSorting.js";
+import { useSortState } from "../hooks/useSortState.js";
+import { useDebouncedValue } from "../hooks/useDebouncedValue.js";
 import StatusBadge from "./StatusBadge.jsx";
 import { BADGE_COLUMNS_SAMPLE } from "../config/statusBadgeConfig.js";
 import TablePaginator from "./TablePaginator.jsx";
@@ -57,7 +55,44 @@ function getStickySx(col, index, isHeader) {
 const visibleColumns = sampleColumns.filter(col => !col.hidden);
 
 export default function SampleTable({ onEdit, filters }) {
-    const { data: rows = [], isLoading: loading, isError } = useSamples();
+    // Stan paginacji/sortu — sam sort/filtr/strona robi baza (server-side).
+    const [page, setPageRaw] = useState(0);
+    const [pageSize, setPageSizeRaw] = useState(25);
+    const { sortCol, sortDir, handleSort } = useSortState();
+
+    // Filtry tekstowe debounce'owane, by nie strzelać do API na każdą literę.
+    const debouncedFilters = useDebouncedValue(filters, 300);
+
+    // Reset strony przy zmianie filtra/sortu — wzorzec "dostosuj stan w trakcie
+    // renderu" (bez useEffect), żeby zapytanie od razu szło po stronie 0.
+    const resetKey = `${JSON.stringify(debouncedFilters)}|${sortCol}|${sortDir}`;
+    const [prevResetKey, setPrevResetKey] = useState(resetKey);
+    let currentPage = page;
+    if (prevResetKey !== resetKey) {
+        setPrevResetKey(resetKey);
+        if (page !== 0) setPageRaw(0);
+        currentPage = 0;
+    }
+
+    const apiParams = useMemo(() => {
+        const p = { page: currentPage, pageSize };
+        if (sortCol) { p.sortCol = sortCol; p.sortDir = sortDir; }
+        if (debouncedFilters.search) p.search = debouncedFilters.search;
+        if (debouncedFilters.owner) p.owner = debouncedFilters.owner;
+        if (debouncedFilters.batch) p.batch = debouncedFilters.batch;
+        if (debouncedFilters.createFrom) p.dateFrom = debouncedFilters.createFrom;
+        if (debouncedFilters.createTo) p.dateTo = debouncedFilters.createTo;
+        return p;
+    }, [currentPage, pageSize, sortCol, sortDir, debouncedFilters]);
+
+    const { data, isLoading: loading, isError } = useSamples(apiParams);
+    const rows = data?.rows ?? [];
+    const total = data?.total ?? 0;
+    const totalPages = Math.max(1, Math.ceil(total / pageSize));
+
+    const setPage = (newPage) => setPageRaw(Math.max(0, Math.min(newPage, totalPages - 1)));
+    const setPageSize = (newSize) => { setPageSizeRaw(newSize); setPageRaw(0); };
+
     const deleteMut = useDeleteSample();
 
     // Q2 Modal state
@@ -97,16 +132,6 @@ export default function SampleTable({ onEdit, filters }) {
         }
     };
 
-    // 1. Filtrowanie
-    const filteredRows = useFilteredRows(rows, filters, sampleFilterConfig);
-
-    // 2. Sortowanie
-    const { sortedRows, sortCol, sortDir, handleSort } = useSorting(filteredRows);
-
-    // 3. Paginacja
-    const { page, pageSize, pageRows, totalPages, setPage, setPageSize } =
-        usePagination(sortedRows, 25);
-
     if (loading) {
         return (
             <Box sx={{ mt: 2 }}>
@@ -137,7 +162,7 @@ export default function SampleTable({ onEdit, filters }) {
                 </Button>
             </Box>
 
-            {filteredRows.length === 0 ? (
+            {total === 0 ? (
                 <Box sx={{ mt: 4, textAlign: "center" }}>
                     <Alert severity="info">Brak próbek spełniających kryteria filtrowania.</Alert>
                 </Box>
@@ -161,7 +186,7 @@ export default function SampleTable({ onEdit, filters }) {
                             </TableHead>
 
                             <TableBody>
-                                {pageRows.map((row) => (
+                                {rows.map((row) => (
                                     <TableRow key={row.id} hover>
                                         {visibleColumns.map((col, index) => (
                                             <TableCell key={col.id} sx={getStickySx(col, index, false)}>
@@ -207,9 +232,9 @@ export default function SampleTable({ onEdit, filters }) {
                     </TableContainer>
 
                     <TablePaginator
-                        page={page}
+                        page={currentPage}
                         pageSize={pageSize}
-                        totalRows={sortedRows.length}
+                        totalRows={total}
                         totalPages={totalPages}
                         setPage={setPage}
                         setPageSize={setPageSize}

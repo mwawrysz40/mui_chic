@@ -11,6 +11,7 @@ export default function PageLayout({
                                        FiltersComponent,
                                        children,
                                        hideToggle = false,
+                                       headerExtra,
                                    }) {
     const [showFilters, setShowFilters] = useState(true);
 
@@ -24,16 +25,19 @@ export default function PageLayout({
                         {title}
                     </Typography>
 
-                    {!hideToggle && (
-                        <Button
-                            variant="outlined"
-                            size="small"
-                            startIcon={showFilters ? <FilterListOffIcon /> : <FilterListIcon />}
-                            onClick={() => setShowFilters(prev => !prev)}
-                        >
-                            {showFilters ? "Ukryj filtry" : "Pokaż filtry"}
-                        </Button>
-                    )}
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                        {headerExtra}
+                        {!hideToggle && (
+                            <Button
+                                variant="outlined"
+                                size="small"
+                                startIcon={showFilters ? <FilterListOffIcon /> : <FilterListIcon />}
+                                onClick={() => setShowFilters(prev => !prev)}
+                            >
+                                {showFilters ? "Ukryj filtry" : "Pokaż filtry"}
+                            </Button>
+                        )}
+                    </Box>
                 </Box>
 
                 {showFilters && FiltersComponent && (

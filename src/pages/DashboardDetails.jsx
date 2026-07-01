@@ -4,7 +4,7 @@ import {
     Breadcrumbs, Link as MuiLink, Paper, Table,
     TableBody, TableCell, TableContainer, TableHead, TableRow, TableFooter
 } from '@mui/material';
-import { Assignment, CheckCircle, ArrowBack, NavigateNext } from '@mui/icons-material';
+import { Assignment, CheckCircle, ArrowBack, NavigateNext, PictureAsPdf } from '@mui/icons-material';
 import { useNavigate, Link } from 'react-router-dom';
 import {
     BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer
@@ -12,7 +12,9 @@ import {
 
 import PageLayout from '../components/PageLayout';
 import StatCard from '../components/dashboard/StatCard';
-import { useChecks, useDataQ2 } from '../hooks/queries';
+import { useChecks, useDataQ2, useWarehouses } from '../hooks/queries';
+import { fetchDashboardPdf } from '../api/getCheck';
+import { downloadBlob } from '../api/excelService';
 
 const MONTHS = ["Styczeń", "Luty", "Marzec", "Kwiecień", "Maj", "Czerwiec", "Lipiec", "Sierpień", "Wrzesień", "Październik", "Listopad", "Grudzień"];
 
@@ -29,14 +31,33 @@ const PARAMETERS = [
 export default function DashboardDetails() {
     const theme = useTheme();
     const navigate = useNavigate();
-    const { data: rawCheck, isLoading: loadingCheck } = useChecks();
-    const { data: rawQ2, isLoading: loadingQ2 } = useDataQ2();
+    const [activeMonth, setActiveMonth] = useState(-1);
+    const [activeWhs, setActiveWhs] = useState(""); // "" = wszystkie magazyny
+    const [downloadingPdf, setDownloadingPdf] = useState(false);
+
+    const { data: rawCheck, isLoading: loadingCheck } = useChecks(activeWhs);
+    const { data: rawQ2, isLoading: loadingQ2 } = useDataQ2(activeWhs);
+    const { data: rawWarehouses } = useWarehouses();
     const checkData = Array.isArray(rawCheck) ? rawCheck : [];
     const q2Data = Array.isArray(rawQ2) ? rawQ2 : [];
+    const warehouses = Array.isArray(rawWarehouses) ? rawWarehouses : [];
     const loading = loadingCheck || loadingQ2;
-    const [activeMonth, setActiveMonth] = useState(-1);
 
     const formatPct = (val) => `${(val || 0).toFixed(1)}%`.replace('.', ',');
+
+    const handleDownloadPdf = async () => {
+        setDownloadingPdf(true);
+        try {
+            const blob = await fetchDashboardPdf({ whsCode: activeWhs, month: activeMonth });
+            const periodPart = activeMonth === -1 ? 'caly-rok' : `${activeMonth}`;
+            const whsPart = activeWhs || 'wszystkie';
+            downloadBlob(blob, `dashboard_${whsPart}_${periodPart}.pdf`);
+        } catch (err) {
+            console.error('Błąd pobierania PDF dashboardu:', err);
+        } finally {
+            setDownloadingPdf(false);
+        }
+    };
 
     let tableRows = [];
     let firstColumnHeader = "Parametr";
@@ -72,9 +93,21 @@ export default function DashboardDetails() {
             title="Monitoring Sprawdzeń"
             hideToggle
             headerExtra={
-                <Button startIcon={<ArrowBack />} onClick={() => navigate('/')} variant="outlined" size="small">
-                    Powrót
-                </Button>
+                <Stack direction="row" spacing={1}>
+                    <Button
+                        startIcon={<PictureAsPdf />}
+                        onClick={handleDownloadPdf}
+                        variant="outlined"
+                        color="error"
+                        size="small"
+                        disabled={downloadingPdf || loading}
+                    >
+                        {downloadingPdf ? 'Pobieranie…' : 'Pobierz PDF'}
+                    </Button>
+                    <Button startIcon={<ArrowBack />} onClick={() => navigate('/')} variant="outlined" size="small">
+                        Powrót
+                    </Button>
+                </Stack>
             }
         >
             {/* Ten kontener naprawia problem ucinania treści na laptopach[cite: 3] */}
@@ -85,11 +118,24 @@ export default function DashboardDetails() {
                     <Typography color="text.primary" sx={{ fontWeight: 700, fontSize: '0.9rem' }}>Monitoring Sprawdzeń</Typography>
                 </Breadcrumbs>
 
-                <Stack direction="row" spacing={1} sx={{ mb: 3, overflowX: 'auto', pb: 1, minHeight: '45px' }}>
+                <Stack direction="row" spacing={1} sx={{ mb: 1.5, overflowX: 'auto', pb: 1, minHeight: '45px' }}>
                     <Button variant={activeMonth === -1 ? "contained" : "outlined"} onClick={() => setActiveMonth(-1)} size="small">Cały Rok</Button>
                     {q2Data.map(d => (
                         <Button key={d.Miesiąc} variant={activeMonth === d.Miesiąc ? "contained" : "outlined"} onClick={() => setActiveMonth(d.Miesiąc)} size="small">
                             {MONTHS[d.Miesiąc - 1]}
+                        </Button>
+                    ))}
+                </Stack>
+
+                {/* Drugi rząd: filtr po magazynie (WhsCode) */}
+                <Stack direction="row" spacing={1} sx={{ mb: 3, overflowX: 'auto', pb: 1, minHeight: '45px', alignItems: 'center' }}>
+                    <Typography variant="caption" color="text.secondary" sx={{ mr: 0.5, whiteSpace: 'nowrap', fontWeight: 700 }}>
+                        Magazyn:
+                    </Typography>
+                    <Button variant={activeWhs === "" ? "contained" : "outlined"} color="secondary" onClick={() => setActiveWhs("")} size="small">Wszystkie</Button>
+                    {warehouses.map(w => (
+                        <Button key={w.whsCode} variant={activeWhs === w.whsCode ? "contained" : "outlined"} color="secondary" onClick={() => setActiveWhs(w.whsCode)} size="small">
+                            {w.whsCode}
                         </Button>
                     ))}
                 </Stack>

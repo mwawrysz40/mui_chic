@@ -1,5 +1,5 @@
 // src/components/ResultTable.jsx
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import {
     Box, Table, TableBody, TableCell, TableContainer, TableHead,
     TableRow, Paper, IconButton, Tooltip, Alert, Skeleton, Snackbar
@@ -8,10 +8,8 @@ import EditIcon from "@mui/icons-material/Edit";
 import LockOpenIcon from "@mui/icons-material/LockOpen";
 import { useSampleResults, useUnlockSample } from "../hooks/queries.js";
 import { wynikiColumns } from "../config/resultColumns.js";
-import { resultFilterConfig } from "../config/resultFilterConfig.js";
-import { useFilteredRows } from "../hooks/useFilteredRows.js";
-import { usePagination } from "../hooks/usePagination.js";
-import { useSorting } from "../hooks/useSorting.js";
+import { useSortState } from "../hooks/useSortState.js";
+import { useDebouncedValue } from "../hooks/useDebouncedValue.js";
 import StatusBadge from "./StatusBadge.jsx";
 import { BADGE_COLUMNS_RESULT } from "../config/statusBadgeConfig.js";
 import TablePaginator from "./TablePaginator.jsx";
@@ -46,7 +44,42 @@ function getStickySx(col, index, isHeader) {
 }
 
 export default function ResultTable({ onEdit, filters }) {
-    const { data: rows = [], isLoading: loading, isError } = useSampleResults();
+    // Paginacja/filtr/sort po stronie bazy.
+    const [page, setPageRaw] = useState(0);
+    const [pageSize, setPageSizeRaw] = useState(25);
+    const { sortCol, sortDir, handleSort } = useSortState();
+    const debouncedFilters = useDebouncedValue(filters, 300);
+
+    // Reset strony przy zmianie filtra/sortu — wzorzec "dostosuj stan w trakcie
+    // renderu" (bez useEffect), żeby zapytanie od razu szło po stronie 0.
+    const resetKey = `${JSON.stringify(debouncedFilters)}|${sortCol}|${sortDir}`;
+    const [prevResetKey, setPrevResetKey] = useState(resetKey);
+    let currentPage = page;
+    if (prevResetKey !== resetKey) {
+        setPrevResetKey(resetKey);
+        if (page !== 0) setPageRaw(0);
+        currentPage = 0;
+    }
+
+    const apiParams = useMemo(() => {
+        const p = { page: currentPage, pageSize };
+        if (sortCol) { p.sortCol = sortCol; p.sortDir = sortDir; }
+        if (debouncedFilters.search) p.search = debouncedFilters.search;
+        if (debouncedFilters.status) p.status = debouncedFilters.status;
+        if (debouncedFilters.batch) p.batch = debouncedFilters.batch;
+        if (debouncedFilters.dateFrom) p.dateFrom = debouncedFilters.dateFrom;
+        if (debouncedFilters.dateTo) p.dateTo = debouncedFilters.dateTo;
+        return p;
+    }, [currentPage, pageSize, sortCol, sortDir, debouncedFilters]);
+
+    const { data, isLoading: loading, isError } = useSampleResults(apiParams);
+    const rows = data?.rows ?? [];
+    const total = data?.total ?? 0;
+    const totalPages = Math.max(1, Math.ceil(total / pageSize));
+
+    const setPage = (newPage) => setPageRaw(Math.max(0, Math.min(newPage, totalPages - 1)));
+    const setPageSize = (newSize) => { setPageSizeRaw(newSize); setPageRaw(0); };
+
     const unlockMut = useUnlockSample();
     const { user } = useAuth();
 
@@ -70,16 +103,6 @@ export default function ResultTable({ onEdit, filters }) {
         }
     };
 
-    // 1. Filtrowanie
-    const filteredRows = useFilteredRows(rows, filters, resultFilterConfig);
-
-    // 2. Sortowanie (na przefiltrowanych danych)
-    const { sortedRows, sortCol, sortDir, handleSort } = useSorting(filteredRows);
-
-    // 3. Paginacja (na posortowanych danych)
-    const { page, pageSize, pageRows, totalPages, setPage, setPageSize } =
-        usePagination(sortedRows, 25);
-
     if (loading) {
         return (
             <Box sx={{ mt: 2 }}>
@@ -94,7 +117,7 @@ export default function ResultTable({ onEdit, filters }) {
         return <Alert severity="error" sx={{ mt: 2 }}>Nie udało się pobrać wyników próbek. Sprawdź połączenie z API.</Alert>;
     }
 
-    if (filteredRows.length === 0) {
+    if (total === 0) {
         return (
             <Box sx={{ mt: 4, textAlign: "center" }}>
                 <Alert severity="info">Brak wyników spełniających kryteria filtrowania.</Alert>
@@ -125,7 +148,7 @@ export default function ResultTable({ onEdit, filters }) {
                         </TableHead>
 
                         <TableBody>
-                            {pageRows.map((row) => (
+                            {rows.map((row) => (
                                 <TableRow key={row.ID} hover>
                                     {allCols.map((col, index) => (
                                         <TableCell key={col.id} sx={getStickySx(col, index, false)}>
@@ -171,9 +194,9 @@ export default function ResultTable({ onEdit, filters }) {
                 </TableContainer>
 
                 <TablePaginator
-                    page={page}
+                    page={currentPage}
                     pageSize={pageSize}
-                    totalRows={sortedRows.length}
+                    totalRows={total}
                     totalPages={totalPages}
                     setPage={setPage}
                     setPageSize={setPageSize}

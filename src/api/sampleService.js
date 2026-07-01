@@ -19,22 +19,25 @@ const normalizeObject = (obj) => {
 }
 
 /**
- * Pobiera próbki z API.
- * USUNIĘTO CACHE: Teraz funkcja zawsze pobiera świeże dane z serwera.
+ * Pobiera próbki z API z paginacją/filtrami/sortem po stronie bazy.
+ * @param {object} params - { page, pageSize, sortCol, sortDir, search, owner, batch, dateFrom, dateTo }
+ * @returns {{ rows: Array, total: number }}
  */
-export const fetchSamples = async () => {
+export const fetchSamples = async (params = {}) => {
     try {
-        const res = await axiosClient.get("/api/v1/GetSample");
-        const raw = res.data;
+        const res = await axiosClient.get("/api/v1/GetSample", { params });
+        const data = res.data || {};
+        const raw = Array.isArray(data.rows) ? data.rows : [];
 
         // Mapujemy i normalizujemy dane, dodając ID dla Material UI
-        return raw.map((item, idx) => {
+        const rows = raw.map((item, idx) => {
             const normalizedItem = normalizeObject(item);
             return {
                 id: item.ID || idx, // Priorytet dla ID z bazy, jeśli nie ma - użyj indeksu
                 ...normalizedItem
             };
         });
+        return { rows, total: Number(data.total ?? rows.length) };
     } catch (err) {
         console.error("fetchSamples error", err);
         throw err;

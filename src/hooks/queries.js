@@ -1,7 +1,7 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient, keepPreviousData } from "@tanstack/react-query";
 import { fetchSamples } from "../api/sampleService";
 import { fetchWynikiProbek } from "../api/getSampleResult";
-import { fetchGetCheck, fetchGetDataQ2 } from "../api/getCheck";
+import { fetchGetCheck, fetchGetDataQ2, fetchWarehouses } from "../api/getCheck";
 import { getQ2 } from "../api/getQ2Service";
 import {
     updateSample,
@@ -23,8 +23,9 @@ import { fetchEwidencje, fetchEwidencjaData } from "../api/ewidencjeService";
 export const queryKeys = {
     samples: ["samples"],
     sampleResults: ["sampleResults"],
-    checks: ["checks"],
-    dataQ2: ["dataQ2"],
+    checks: (whsCode = "") => ["checks", whsCode],
+    dataQ2: (whsCode = "") => ["dataQ2", whsCode],
+    warehouses: ["warehouses"],
     q2: (sampleId) => ["q2", sampleId],
     mrpFilters: ["mrpFilters"],
     mrpData: ["mrpData"],
@@ -34,20 +35,40 @@ export const queryKeys = {
 
 // ---------- Zapytania (odczyt) ----------
 
-export function useSamples() {
-    return useQuery({ queryKey: queryKeys.samples, queryFn: fetchSamples });
+export function useSamples(params = {}) {
+    return useQuery({
+        queryKey: [...queryKeys.samples, params],
+        queryFn: () => fetchSamples(params),
+        placeholderData: keepPreviousData, // płynna zmiana strony/filtra
+    });
 }
 
-export function useSampleResults() {
-    return useQuery({ queryKey: queryKeys.sampleResults, queryFn: fetchWynikiProbek });
+export function useSampleResults(params = {}) {
+    return useQuery({
+        queryKey: [...queryKeys.sampleResults, params],
+        queryFn: () => fetchWynikiProbek(params),
+        placeholderData: keepPreviousData,
+    });
 }
 
-export function useChecks() {
-    return useQuery({ queryKey: queryKeys.checks, queryFn: fetchGetCheck });
+export function useChecks(whsCode = "") {
+    return useQuery({
+        queryKey: queryKeys.checks(whsCode),
+        queryFn: () => fetchGetCheck(whsCode),
+        placeholderData: keepPreviousData, // płynna zmiana magazynu bez migotania
+    });
 }
 
-export function useDataQ2() {
-    return useQuery({ queryKey: queryKeys.dataQ2, queryFn: fetchGetDataQ2 });
+export function useDataQ2(whsCode = "") {
+    return useQuery({
+        queryKey: queryKeys.dataQ2(whsCode),
+        queryFn: () => fetchGetDataQ2(whsCode),
+        placeholderData: keepPreviousData,
+    });
+}
+
+export function useWarehouses() {
+    return useQuery({ queryKey: queryKeys.warehouses, queryFn: fetchWarehouses });
 }
 
 export function useQ2(sampleId) {
