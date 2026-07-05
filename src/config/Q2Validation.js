@@ -20,8 +20,9 @@ export const getFieldStyle = (fieldId, value, allFormData) => {
     }
 
     // --- SEKCJA: NIKOTYNA (Tylko pola RAG) ---
-    // Usunęliśmy NikoPR1 i NikoPR2, więc one zawsze będą białe
-    if (fieldId === "NikoRAG1" || fieldId === "NikoRAG2") {
+    // RAG1/RAG2 to pola instancji pomiaru (_ESL_Q2_Niko); NikoRAG1/NikoRAG2
+    // zostają dla zgodności ze starym, szerokim rekordem.
+    if (fieldId === "RAG1" || fieldId === "RAG2" || fieldId === "NikoRAG1" || fieldId === "NikoRAG2") {
         if (value === "R") return { backgroundColor: COLORS.RED };
         if (value === "A") return { backgroundColor: COLORS.YELLOW };
         if (value === "G") return { backgroundColor: COLORS.GREEN };

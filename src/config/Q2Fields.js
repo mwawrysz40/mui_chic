@@ -10,9 +10,16 @@
 // WAŻNE: col i row są OPCJONALNE. Jeśli żadne pole w zakładce ich nie ma,
 // zakładka renderuje się dokładnie tak samo jak przed zmianą.
 //
-// Te zakładki to pola SZEROKIE z _ESL_Q2 (Niko/Waga/Wysokość/ogólne).
+// Te zakładki to pola SZEROKIE z _ESL_Q2 (NikoM/Waga/Wysokość/ogólne).
 // 12 komponentów opakowań przeniesiono do modelu instancji — patrz
 // Q2ComponentTabs.js (renderowane jako listy instancji z przyciskiem "+").
+// Zakładka "Nikotyna" (kind: "niko") łączy oba światy: pola rekordu (fields)
+// + lista pomiarów z _ESL_Q2_Niko (instanceFields, tablica nikos[] w payloadzie).
+
+/** Pusta instancja pomiaru nikotyny (kolumny _ESL_Q2_Niko). */
+export function emptyNikoInstance() {
+    return { PR1: "", PR2: "", RAG1: "", RAG2: "" };
+}
 
 export const Q2Tabs = [
     {
@@ -52,24 +59,26 @@ export const Q2Tabs = [
     {
         id: "niko",
         label: "Nikotyna",
+        // Model instancji (_ESL_Q2_Niko): pomiary dodawane przyciskiem "+",
+        // renderowane w Q2Modal przez NikoInstances — patrz kind: "niko".
+        kind: "niko",
+        // Pola rekordu (szerokie, _ESL_Q2 / pochodne) nad listą pomiarów.
         fields: [
-            // Rząd 1 — moc + próbki obok siebie
-            { id: "NikoM",   label: "Moc nikotyny", type: "number", disabled: true },
-            { id: "NikoPR1", label: "Próbka 1",     type: "number" },
-            { id: "NikoPR2", label: "Próbka 2",     type: "number" },
-
-            // Rząd 2 — wyniki RAG obok siebie
-            { id: "NikoRAG1", label: "RAG1", type: "text", disabled: true },
-            { id: "NikoRAG2", label: "RAG2", type: "text", disabled: true },
-
-            // Rząd 3 — wartości pochodne (liczone, tylko do odczytu)
-            { id: "AvgNiko",       label: "Średnia",                type: "number", disabled: true },
+            { id: "NikoM",         label: "Moc nikotyny",           type: "number", disabled: true },
             { id: "AccCriterium1", label: "Kryterium akceptacji 1", type: "number", disabled: true },
             { id: "AccCriterium2", label: "Kryterium akceptacji 2", type: "number", disabled: true },
 
-            // Rząd 4 — weryfikacja GC
             { id: "PersonWerNik", label: "Osoba weryfikująca wyniki nikotyny", type: "select", dictType: "PERSON" },
             { id: "EvaluationGC", label: "Ocena zgodności wyniku GC",          type: "select", dictType: "STATUS" },
+        ],
+        // Pola jednej instancji pomiaru (mapowane na kolumny _ESL_Q2_Niko;
+        // Avg jest liczona w locie i nie jest zapisywana).
+        instanceFields: [
+            { id: "PR1",  label: "Próbka 1", type: "number" },
+            { id: "PR2",  label: "Próbka 2", type: "number" },
+            { id: "RAG1", label: "RAG1",     type: "text",   disabled: true },
+            { id: "RAG2", label: "RAG2",     type: "text",   disabled: true },
+            { id: "Avg",  label: "Średnia",  type: "number", disabled: true },
         ],
     },
     {

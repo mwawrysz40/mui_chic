@@ -70,25 +70,30 @@ const round2 = (n) => Math.round((n + Number.EPSILON) * 100) / 100;
 
 /**
  * Liczy pola pochodne nikotyny (tylko do odczytu) z surowego rekordu Q2:
- *  - AvgNiko       — średnia z dostępnych próbek NikoPR1/NikoPR2,
  *  - AccCriterium1/2 — kryteria akceptacji wg mocy (NIKO_ACCEPTANCE).
  * Wartości służą tylko do wyświetlenia — nie są zapisywane (poza Q2_COLUMNS).
+ * Średnia z próbek jest liczona per pomiar — patrz computeNikoInstanceAvg.
  */
 export const computeNikoDerived = (record) => {
-    const vals = [record?.NikoPR1, record?.NikoPR2]
-        .map((v) => (v === null || v === undefined || v === "" ? null : parseFloat(v)))
-        .filter((v) => v !== null && !isNaN(v));
-
-    const AvgNiko = vals.length
-        ? round2(vals.reduce((a, b) => a + b, 0) / vals.length)
-        : "";
-
     const M = parseFloat(record?.NikoM);
     const acc = !isNaN(M) ? NIKO_ACCEPTANCE[round2(M)] : undefined;
 
     return {
-        AvgNiko,
         AccCriterium1: acc ? acc[0] : "",
         AccCriterium2: acc ? acc[1] : "",
     };
+};
+
+/**
+ * Średnia z dostępnych próbek PR1/PR2 jednej instancji pomiaru nikotyny
+ * (_ESL_Q2_Niko). Liczona w locie do wyświetlenia — nie jest zapisywana.
+ */
+export const computeNikoInstanceAvg = (instance) => {
+    const vals = [instance?.PR1, instance?.PR2]
+        .map((v) => (v === null || v === undefined || v === "" ? null : parseFloat(v)))
+        .filter((v) => v !== null && !isNaN(v));
+
+    return vals.length
+        ? round2(vals.reduce((a, b) => a + b, 0) / vals.length)
+        : "";
 };

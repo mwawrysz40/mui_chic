@@ -11,18 +11,19 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import { getFieldStyle } from "../config/Q2Validation.js";
 import { getQ2 } from "../api/getQ2Service.js";
 import { useUpdateQ2 } from "../hooks/queries.js";
-import { Q2Tabs } from "../config/Q2Fields.js";
+import { Q2Tabs, emptyNikoInstance } from "../config/Q2Fields.js";
 import {
     Q2_COMPONENT_TABS,
     componentInstanceFields,
     emptyComponentInstance,
 } from "../config/Q2ComponentTabs.js";
-import { calculateNikoRAG, computeNikoDerived } from "../config/Q2Calculations.js";
+import { calculateNikoRAG, computeNikoDerived, computeNikoInstanceAvg } from "../config/Q2Calculations.js";
 import { useDictionary } from "../hooks/useDictionary.jsx";
 
-// Pełna lista zakładek: 4 płaskie (Q2Tabs) + 12 komponentów (model instancji).
+// Pełna lista zakładek: 4 z Q2Fields (płaskie; "Nikotyna" ma kind: "niko" —
+// pola rekordu + lista pomiarów) + 12 komponentów (model instancji).
 const ALL_TABS = [
-    ...Q2Tabs.map((t) => ({ id: t.id, label: t.label, kind: "flat", tab: t })),
+    ...Q2Tabs.map((t) => ({ id: t.id, label: t.label, kind: t.kind ?? "flat", tab: t })),
     ...Q2_COMPONENT_TABS.map((c) => ({ id: c.key, label: c.label, kind: "component", comp: c })),
 ];
 
@@ -188,6 +189,63 @@ function ComponentInstances({ comp, components, saving, onAdd, onRemove, onChang
     );
 }
 
+/** Lista pomiarów nikotyny (model child _ESL_Q2_Niko) + przycisk dodawania/usuwania. */
+function NikoInstances({ fields, nikos, saving, onAdd, onRemove, onChange }) {
+    return (
+        <Box sx={{ mt: 3 }}>
+            <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
+                <Typography variant="subtitle1">
+                    Pomiary nikotyny — instancje: {nikos.length}
+                </Typography>
+                <Button
+                    startIcon={<AddIcon />}
+                    onClick={onAdd}
+                    disabled={saving}
+                    variant="outlined"
+                    size="small"
+                >
+                    Dodaj pomiar
+                </Button>
+            </Box>
+
+            {nikos.length === 0 && (
+                <Typography variant="body2" color="text.secondary">
+                    Brak pomiarów. Użyj „Dodaj pomiar”, aby dodać pomiar nikotyny.
+                </Typography>
+            )}
+
+            {nikos.map((n, idx) => {
+                // Avg liczona w locie (nie trzymamy jej w stanie — nie jest zapisywana).
+                const display = { ...n, Avg: computeNikoInstanceAvg(n) };
+                return (
+                    <Box key={idx} sx={{ border: 1, borderColor: "divider", borderRadius: 1, p: 2, mb: 2 }}>
+                        <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 1 }}>
+                            <Typography variant="caption" color="text.secondary">
+                                Pomiar #{idx + 1}
+                            </Typography>
+                            <IconButton size="small" color="error" onClick={() => onRemove(idx)} disabled={saving}>
+                                <DeleteIcon fontSize="small" />
+                            </IconButton>
+                        </Box>
+                        <Grid container spacing={2}>
+                            {fields.map((field) => (
+                                <Grid item xs={12} sm={6} md={2} key={field.id}>
+                                    <FieldInput
+                                        field={field}
+                                        formData={display}
+                                        saving={saving}
+                                        onChange={(fid, val) => onChange(idx, fid, val)}
+                                    />
+                                </Grid>
+                            ))}
+                        </Grid>
+                    </Box>
+                );
+            })}
+        </Box>
+    );
+}
+
 export default function Q2Modal({ open, sampleId, onClose }) {
     const [loading, setLoading] = useState(false);
     const [saving, setSaving] = useState(false);
@@ -211,8 +269,10 @@ export default function Q2Modal({ open, sampleId, onClose }) {
                 // Pola pochodne (Średnia, Kryteria) liczone i wstrzyknięte do obu
                 // stanów — żeby nie generowały fałszywego "niezapisane zmiany".
                 const record = { ...raw, ...computeNikoDerived(raw) };
-                // components[] (instancje 12 komponentów) — zawsze tablica.
+                // components[] (instancje 12 komponentów) i nikos[] (pomiary
+                // nikotyny) — zawsze tablice.
                 record.components = Array.isArray(raw.components) ? raw.components : [];
+                record.nikos = Array.isArray(raw.nikos) ? raw.nikos : [];
                 setFormData(record);
                 setOriginalData(record);
             } catch (err) {
@@ -229,15 +289,7 @@ export default function Q2Modal({ open, sampleId, onClose }) {
     const isDirty = JSON.stringify(formData) !== JSON.stringify(originalData);
 
     const handleChange = (field, value) => {
-        setFormData((prev) => {
-            const newData = { ...prev, [field]: value };
-            if (field === "NikoM" || field === "NikoPR1" || field === "NikoPR2") {
-                newData.NikoRAG1 = calculateNikoRAG(newData.NikoM, newData.NikoPR1, "NikoPR1", newData.ItemCode);
-                newData.NikoRAG2 = calculateNikoRAG(newData.NikoM, newData.NikoPR2, "NikoPR2", newData.ItemCode);
-                Object.assign(newData, computeNikoDerived(newData));
-            }
-            return newData;
-        });
+        setFormData((prev) => ({ ...prev, [field]: value }));
     };
 
     // --- Instancje komponentów (model child _ESL_Q2_Component) ---
@@ -260,6 +312,35 @@ export default function Q2Modal({ open, sampleId, onClose }) {
             const next = [...(prev.components ?? [])];
             next[globalIdx] = { ...next[globalIdx], [field]: value };
             return { ...prev, components: next };
+        });
+    };
+
+    // --- Pomiary nikotyny (model child _ESL_Q2_Niko) ---
+    const addNiko = () => {
+        setFormData((prev) => ({
+            ...prev,
+            nikos: [...(prev.nikos ?? []), emptyNikoInstance()],
+        }));
+    };
+
+    const removeNiko = (idx) => {
+        setFormData((prev) => ({
+            ...prev,
+            nikos: (prev.nikos ?? []).filter((_, i) => i !== idx),
+        }));
+    };
+
+    const updateNiko = (idx, field, value) => {
+        setFormData((prev) => {
+            const next = [...(prev.nikos ?? [])];
+            const inst = { ...next[idx], [field]: value };
+            if (field === "PR1" || field === "PR2") {
+                // RAG per próbka — kryteria z mocy rekordu (NikoM) i indeksu (bazy PR.BAZ%).
+                inst.RAG1 = calculateNikoRAG(prev.NikoM, inst.PR1, "NikoPR1", prev.ItemCode);
+                inst.RAG2 = calculateNikoRAG(prev.NikoM, inst.PR2, "NikoPR2", prev.ItemCode);
+            }
+            next[idx] = inst;
+            return { ...prev, nikos: next };
         });
     };
 
@@ -334,24 +415,42 @@ export default function Q2Modal({ open, sampleId, onClose }) {
                             {formData &&
                                 ALL_TABS.map((tab, idx) => (
                                     <div key={tab.id} hidden={tabIndex !== idx}>
-                                        {tabIndex === idx &&
-                                            (tab.kind === "flat" ? (
+                                        {tabIndex === idx && tab.kind === "flat" && (
+                                            <FieldsGrid
+                                                fields={tab.tab.fields}
+                                                formData={formData}
+                                                saving={saving}
+                                                onFieldChange={handleChange}
+                                            />
+                                        )}
+                                        {tabIndex === idx && tab.kind === "niko" && (
+                                            <>
                                                 <FieldsGrid
                                                     fields={tab.tab.fields}
                                                     formData={formData}
                                                     saving={saving}
                                                     onFieldChange={handleChange}
                                                 />
-                                            ) : (
-                                                <ComponentInstances
-                                                    comp={tab.comp}
-                                                    components={formData.components ?? []}
+                                                <NikoInstances
+                                                    fields={tab.tab.instanceFields}
+                                                    nikos={formData.nikos ?? []}
                                                     saving={saving}
-                                                    onAdd={addInstance}
-                                                    onRemove={removeInstance}
-                                                    onChange={updateInstance}
+                                                    onAdd={addNiko}
+                                                    onRemove={removeNiko}
+                                                    onChange={updateNiko}
                                                 />
-                                            ))}
+                                            </>
+                                        )}
+                                        {tabIndex === idx && tab.kind === "component" && (
+                                            <ComponentInstances
+                                                comp={tab.comp}
+                                                components={formData.components ?? []}
+                                                saving={saving}
+                                                onAdd={addInstance}
+                                                onRemove={removeInstance}
+                                                onChange={updateInstance}
+                                            />
+                                        )}
                                     </div>
                                 ))}
                         </>
