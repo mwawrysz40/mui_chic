@@ -13,11 +13,14 @@ import Logout from '@mui/icons-material/Logout'
 import PersonOutlineIcon from '@mui/icons-material/PersonOutline'
 import { useLocation } from 'react-router-dom'
 import { useAuth } from '../auth/AuthProvider'
+import { primaryGroupLabel } from '../auth/access'
 
 const PAGE_TITLES = {
-    '/':       { title: 'Dashboard',               sub: 'Przegląd systemu i statystyki' },
-    '/probki': { title: 'Ewidencja Próbek Laboratoryjnych', sub: 'Zarządzanie próbkami i seriami badawczymi' },
-    '/wyniki': { title: 'Wyniki Analiz',                    sub: 'Przeglądanie i edycja wyników badań' },
+    '/':           { title: 'Dashboard',               sub: 'Przegląd systemu i statystyki' },
+    '/probki':     { title: 'Ewidencja Próbek Laboratoryjnych', sub: 'Zarządzanie próbkami i seriami badawczymi' },
+    '/wyniki':     { title: 'Wyniki Analiz',                    sub: 'Przeglądanie i edycja wyników badań' },
+    '/ewidencje':  { title: 'Ewidencje akcyzowe',               sub: 'Raporty akcyzowe i eksport do Excel/PDF' },
+    '/mrp':        { title: 'MRP',                              sub: 'Planowanie zapotrzebowania materiałowego' },
 }
 
 export default function Header() {
@@ -103,7 +106,7 @@ export default function Header() {
                             color:     'text.secondary',
                             lineHeight: 1.2,
                         }}>
-                            {user?.groups?.[0] || 'Laborant'}
+                            {primaryGroupLabel(user) || 'Laborant'}
                         </Typography>
                     </Box>
 

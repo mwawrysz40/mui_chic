@@ -11,29 +11,49 @@ import Collapse from "@mui/material/Collapse";
 import Typography from "@mui/material/Typography";
 import Divider from "@mui/material/Divider";
 
-import DashboardIcon from "@mui/icons-material/Dashboard";
-import ScienceIcon from "@mui/icons-material/Science";
-import BiotechIcon from "@mui/icons-material/Biotech";
-import AssessmentIcon from "@mui/icons-material/Assessment";
-// Ikony sekcji Logistyka — ukryte na produkcji (patrz niżej)
-// import InventoryIcon from "@mui/icons-material/Inventory";
-// import ReceiptLongIcon from "@mui/icons-material/ReceiptLong";
 import ExpandLess from "@mui/icons-material/ExpandLess";
 import ExpandMore from "@mui/icons-material/ExpandMore";
 
 import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../auth/AuthProvider";
+import { useAccess } from "../auth/access";
 import { DRAWER_WIDTH } from "../config/constants";
 import Logo from "./Logo";
+
+// Styl nagłówka sekcji — wspólny dla wszystkich sekcji menu.
+const SECTION_LABEL_SX = {
+    fontSize:      "10px",
+    fontWeight:    600,
+    letterSpacing: "1px",
+    textTransform: "uppercase",
+    color:         "rgba(196,181,253,0.45)",
+    px:            2.5,
+    py:            1,
+    mt:            1,
+};
 
 export default function Sidebar() {
     const navigate  = useNavigate();
     const location  = useLocation();
     const { user }  = useAuth();
+    const { sections } = useAccess();
 
-    const [openLab, setOpenLab] = useState(
-        location.pathname === "/probki" || location.pathname === "/wyniki"
+    // Rozwinięte pozycje z podmenu — domyślnie te, w których jest aktywna trasa.
+    const [openItems, setOpenItems] = useState(() =>
+        Object.fromEntries(
+            sections.flatMap((section) =>
+                section.items
+                    .filter((item) => item.children)
+                    .map((item) => [
+                        item.id,
+                        item.children.some((c) => c.path === location.pathname),
+                    ]),
+            ),
+        )
     );
+
+    const toggleItem = (id) =>
+        setOpenItems((prev) => ({ ...prev, [id]: !prev[id] }));
 
     // Inicjały użytkownika do avatara
     const hasFullName = user?.firstName?.trim() && user?.lastName?.trim();
@@ -94,120 +114,71 @@ export default function Sidebar() {
             </Box>
 
             {/* ── Nawigacja ── */}
+            {/* Sekcje i uprawnienia pochodzą z src/config/navigation.js —
+                useAccess() zwraca tylko te, które użytkownik może zobaczyć. */}
             <Box sx={{ flex: 1, overflow: "auto", py: 1 }}>
+                {sections.map((section) => (
+                    <React.Fragment key={section.id}>
+                        <Typography sx={SECTION_LABEL_SX}>{section.label}</Typography>
 
-                {/* Sekcja: Główne */}
-                <Typography sx={{
-                    fontSize:      "10px",
-                    fontWeight:    600,
-                    letterSpacing: "1px",
-                    textTransform: "uppercase",
-                    color:         "rgba(196,181,253,0.45)",
-                    px:            2.5,
-                    py:            1,
-                    mt:            1,
-                }}>
-                    Główne
-                </Typography>
+                        <List disablePadding>
+                            {section.items.map((item) => {
+                                const Icon = item.icon;
 
-                <List disablePadding>
-                    <ListItem disablePadding>
-                        <ListItemButton
-                            selected={location.pathname === "/"}
-                            onClick={() => navigate("/")}
-                        >
-                            <ListItemIcon><DashboardIcon sx={{ fontSize: 18 }} /></ListItemIcon>
-                            <ListItemText primary="Dashboard" />
-                        </ListItemButton>
-                    </ListItem>
-                </List>
+                                // Pozycja z podmenu — rozwijana lista tras podrzędnych.
+                                if (item.children) {
+                                    const open = Boolean(openItems[item.id]);
 
-                {/* Sekcja: Laboratorium */}
-                <Typography sx={{
-                    fontSize:      "10px",
-                    fontWeight:    600,
-                    letterSpacing: "1px",
-                    textTransform: "uppercase",
-                    color:         "rgba(196,181,253,0.45)",
-                    px:            2.5,
-                    py:            1,
-                    mt:            1,
-                }}>
-                    Laboratorium
-                </Typography>
+                                    return (
+                                        <React.Fragment key={item.id}>
+                                            <ListItem disablePadding>
+                                                <ListItemButton onClick={() => toggleItem(item.id)}>
+                                                    <ListItemIcon><Icon sx={{ fontSize: 18 }} /></ListItemIcon>
+                                                    <ListItemText primary={item.label} />
+                                                    {open
+                                                        ? <ExpandLess sx={{ fontSize: 16, color: "rgba(196,181,253,0.5)" }} />
+                                                        : <ExpandMore sx={{ fontSize: 16, color: "rgba(196,181,253,0.5)" }} />
+                                                    }
+                                                </ListItemButton>
+                                            </ListItem>
 
-                <List disablePadding>
-                    <ListItem disablePadding>
-                        <ListItemButton onClick={() => setOpenLab(!openLab)}>
-                            <ListItemIcon><BiotechIcon sx={{ fontSize: 18 }} /></ListItemIcon>
-                            <ListItemText primary="Próbki i Wyniki" />
-                            {openLab
-                                ? <ExpandLess sx={{ fontSize: 16, color: "rgba(196,181,253,0.5)" }} />
-                                : <ExpandMore sx={{ fontSize: 16, color: "rgba(196,181,253,0.5)" }} />
-                            }
-                        </ListItemButton>
-                    </ListItem>
+                                            <Collapse in={open} timeout="auto" unmountOnExit>
+                                                <List component="div" disablePadding>
+                                                    {item.children.map((child) => {
+                                                        const ChildIcon = child.icon;
+                                                        return (
+                                                            <ListItemButton
+                                                                key={child.id}
+                                                                sx={{ pl: 4.5 }}
+                                                                selected={location.pathname === child.path}
+                                                                onClick={() => navigate(child.path)}
+                                                            >
+                                                                <ListItemIcon><ChildIcon sx={{ fontSize: 16 }} /></ListItemIcon>
+                                                                <ListItemText primary={child.label} />
+                                                            </ListItemButton>
+                                                        );
+                                                    })}
+                                                </List>
+                                            </Collapse>
+                                        </React.Fragment>
+                                    );
+                                }
 
-                    <Collapse in={openLab} timeout="auto" unmountOnExit>
-                        <List component="div" disablePadding>
-                            <ListItemButton
-                                sx={{ pl: 4.5 }}
-                                selected={location.pathname === "/probki"}
-                                onClick={() => navigate("/probki")}
-                            >
-                                <ListItemIcon><ScienceIcon sx={{ fontSize: 16 }} /></ListItemIcon>
-                                <ListItemText primary="Próbki" />
-                            </ListItemButton>
-
-                            <ListItemButton
-                                sx={{ pl: 4.5 }}
-                                selected={location.pathname === "/wyniki"}
-                                onClick={() => navigate("/wyniki")}
-                            >
-                                <ListItemIcon><AssessmentIcon sx={{ fontSize: 16 }} /></ListItemIcon>
-                                <ListItemText primary="Wyniki Analiz" />
-                            </ListItemButton>
+                                return (
+                                    <ListItem key={item.id} disablePadding>
+                                        <ListItemButton
+                                            selected={location.pathname === item.path}
+                                            onClick={() => navigate(item.path)}
+                                        >
+                                            <ListItemIcon><Icon sx={{ fontSize: 18 }} /></ListItemIcon>
+                                            <ListItemText primary={item.label} />
+                                        </ListItemButton>
+                                    </ListItem>
+                                );
+                            })}
                         </List>
-                    </Collapse>
-                </List>
-
-                {/* Sekcja: Logistyka — ukryta na produkcji (backend gotowy, front wyłączony) */}
-                {/*
-                <Typography sx={{
-                    fontSize:      "10px",
-                    fontWeight:    600,
-                    letterSpacing: "1px",
-                    textTransform: "uppercase",
-                    color:         "rgba(196,181,253,0.45)",
-                    px:            2.5,
-                    py:            1,
-                    mt:            1,
-                }}>
-                    Logistyka
-                </Typography>
-
-                <List disablePadding>
-                    <ListItem disablePadding>
-                        <ListItemButton
-                            selected={location.pathname === "/mrp"}
-                            onClick={() => navigate("/mrp")}
-                        >
-                            <ListItemIcon><InventoryIcon sx={{ fontSize: 18 }} /></ListItemIcon>
-                            <ListItemText primary="MRP" />
-                        </ListItemButton>
-                    </ListItem>
-
-                    <ListItem disablePadding>
-                        <ListItemButton
-                            selected={location.pathname === "/ewidencje"}
-                            onClick={() => navigate("/ewidencje")}
-                        >
-                            <ListItemIcon><ReceiptLongIcon sx={{ fontSize: 18 }} /></ListItemIcon>
-                            <ListItemText primary="Ewidencje akcyzowe" />
-                        </ListItemButton>
-                    </ListItem>
-                </List>
-                */}
+                    </React.Fragment>
+                ))}
             </Box>
 
             {/* ── Karta użytkownika na dole ── */}

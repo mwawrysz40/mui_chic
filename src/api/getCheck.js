@@ -1,36 +1,19 @@
 import axiosClient from "./axiosClient";
 
+// Błędy normalizuje response-interceptor axiosClient ({ message, status }) —
+// ręczne try/catch tylko dublowałoby tę obsługę.
+
 // Filtr magazynu (whsCode) jest opcjonalny — pusty = wszystkie magazyny.
 const whsParams = (whsCode) => (whsCode ? { params: { whsCode } } : undefined);
 
 export const fetchGetCheck = async (whsCode) => {
-    try {
-        const response = await axiosClient.get("/api/v1/GetCheck", whsParams(whsCode));
-        return response.data;
-    } catch (error) {
-        console.error("Błąd fetchGetCheck:", {
-            message: error.message,
-            status:  error.response?.status,
-            data:    error.response?.data,
-            url:     error.config?.url,
-        });
-        throw error;
-    }
+    const response = await axiosClient.get("/api/v1/GetCheck", whsParams(whsCode));
+    return response.data;
 };
 
 export const fetchGetDataQ2 = async (whsCode) => {
-    try {
-        const response = await axiosClient.get("/api/v1/GetDataQ2", whsParams(whsCode));
-        return response.data;
-    } catch (error) {
-        console.error("Błąd fetchGetDataQ2:", {
-            message: error.message,
-            status:  error.response?.status,
-            data:    error.response?.data,
-            url:     error.config?.url,
-        });
-        throw error;
-    }
+    const response = await axiosClient.get("/api/v1/GetDataQ2", whsParams(whsCode));
+    return response.data;
 };
 
 /** Lista magazynów (WhsCode) na przyciski filtra dashboardu. */
@@ -47,6 +30,7 @@ export const fetchDashboardPdf = async ({ whsCode, month } = {}) => {
     const response = await axiosClient.get("/api/v1/GetDashboardPdf", {
         params,
         responseType: "blob",
+        timeout: 60_000, // agregaty + render PDF bywają wolne; nadpisujemy globalne 5 s
     });
     return response.data;
 };

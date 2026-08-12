@@ -1,16 +1,30 @@
 import React, { Suspense, lazy } from 'react'
-import { Routes, Route } from 'react-router-dom'
+import { Routes, Route, Navigate } from 'react-router-dom'
 import Layout from './components/Layout'
 import DashboardHub from './pages/DashboardHub';
 import DashboardDetails from './pages/DashboardDetails';
+import RequireAccess from './auth/RequireAccess';
+import NoAccess from './components/NoAccess';
+import { useAccess } from './auth/access';
 
 
 // const Dashboard = lazy(() => import('./pages/Dashboard'))
 const Probki = lazy(() => import('./pages/Probki'))
 const WynikProbek = lazy(() => import('./pages/WynikiProbek'))
-// Ukryte na produkcji — backend gotowy, front wyłączony do czasu wdrożenia
-// const Mrp = lazy(() => import('./pages/Mrp'))
-// const Ewidencje = lazy(() => import('./pages/Ewidencje'))
+const Mrp = lazy(() => import('./pages/Mrp'))
+const Ewidencje = lazy(() => import('./pages/Ewidencje'))
+
+
+// Użytkownik bez grupy Laboratorium nie zobaczy Dashboardu — kierujemy go
+// na pierwszą stronę, do której ma uprawnienia (np. Ewidencje dla Akcyzy).
+function HomeRoute() {
+    const { canAccessPath, firstPath } = useAccess()
+
+    if (canAccessPath('/')) return <DashboardHub />
+    if (firstPath) return <Navigate to={firstPath} replace />
+
+    return <NoAccess />
+}
 
 
 export default function App() {
@@ -18,13 +32,12 @@ export default function App() {
         <Layout>
             <Suspense fallback={<div>Ładowanie...</div>}>
                 <Routes>
-                    <Route path="/" element={<DashboardHub />} />
-                    <Route path="/dashboard/checks" element={<DashboardDetails />} />
-                    <Route path="/probki" element={<Probki />} />
-                    <Route path="/wyniki" element={<WynikProbek />} />
-                    {/* Ukryte na produkcji — odkomentuj wraz z importami powyżej */}
-                    {/* <Route path="/mrp" element={<Mrp />} /> */}
-                    {/* <Route path="/ewidencje" element={<Ewidencje />} /> */}
+                    <Route path="/" element={<HomeRoute />} />
+                    <Route path="/dashboard/checks" element={<RequireAccess><DashboardDetails /></RequireAccess>} />
+                    <Route path="/probki"    element={<RequireAccess><Probki /></RequireAccess>} />
+                    <Route path="/wyniki"    element={<RequireAccess><WynikProbek /></RequireAccess>} />
+                    <Route path="/ewidencje" element={<RequireAccess><Ewidencje /></RequireAccess>} />
+                    <Route path="/mrp"       element={<RequireAccess><Mrp /></RequireAccess>} />
                 </Routes>
             </Suspense>
         </Layout>

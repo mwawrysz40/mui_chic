@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
     Grid, Typography, Box, Stack, Button, useTheme,
     Breadcrumbs, Link as MuiLink, Paper, Table,
@@ -38,10 +38,17 @@ export default function DashboardDetails() {
     const { data: rawCheck, isLoading: loadingCheck } = useChecks(activeWhs);
     const { data: rawQ2, isLoading: loadingQ2 } = useDataQ2(activeWhs);
     const { data: rawWarehouses } = useWarehouses();
-    const checkData = Array.isArray(rawCheck) ? rawCheck : [];
-    const q2Data = Array.isArray(rawQ2) ? rawQ2 : [];
+    const checkData = useMemo(() => (Array.isArray(rawCheck) ? rawCheck : []), [rawCheck]);
+    const q2Data = useMemo(() => (Array.isArray(rawQ2) ? rawQ2 : []), [rawQ2]);
     const warehouses = Array.isArray(rawWarehouses) ? rawWarehouses : [];
     const loading = loadingCheck || loadingQ2;
+
+    // Backend (GetCheck/GetDataQ2) zwraca wyłącznie bieżący rok — etykiety okresu
+    // liczymy z zegara zamiast zaszywać rok na sztywno.
+    const currentYear = new Date().getFullYear();
+    const periodText = activeMonth === -1
+        ? `CAŁY ROK ${currentYear}`
+        : `${MONTHS[activeMonth - 1].toUpperCase()} ${currentYear}`;
 
     const formatPct = (val) => `${(val || 0).toFixed(1)}%`.replace('.', ',');
 
@@ -59,34 +66,43 @@ export default function DashboardDetails() {
         }
     };
 
-    let tableRows = [];
-    let firstColumnHeader = "Parametr";
-
-    if (activeMonth === -1) {
-        firstColumnHeader = "Miesiąc";
-        tableRows = q2Data.map(mRow => {
-            const rAvg = PARAMETERS.reduce((acc, p) => acc + parseFloat(mRow[`${p.key}R`] || 0), 0) / PARAMETERS.length;
-            const aAvg = PARAMETERS.reduce((acc, p) => acc + parseFloat(mRow[`${p.key}A`] || 0), 0) / PARAMETERS.length;
-            const gAvg = PARAMETERS.reduce((acc, p) => acc + parseFloat(mRow[`${p.key}G`] || 0), 0) / PARAMETERS.length;
-            return { label: MONTHS[mRow.Miesiąc - 1], r: rAvg, a: aAvg, g: gAvg };
-        });
-    } else {
+    const { tableRows, firstColumnHeader } = useMemo(() => {
+        if (activeMonth === -1) {
+            return {
+                firstColumnHeader: "Miesiąc",
+                tableRows: q2Data.map(mRow => {
+                    const rAvg = PARAMETERS.reduce((acc, p) => acc + parseFloat(mRow[`${p.key}R`] || 0), 0) / PARAMETERS.length;
+                    const aAvg = PARAMETERS.reduce((acc, p) => acc + parseFloat(mRow[`${p.key}A`] || 0), 0) / PARAMETERS.length;
+                    const gAvg = PARAMETERS.reduce((acc, p) => acc + parseFloat(mRow[`${p.key}G`] || 0), 0) / PARAMETERS.length;
+                    return { label: MONTHS[mRow.Miesiąc - 1], r: rAvg, a: aAvg, g: gAvg };
+                }),
+            };
+        }
         const mData = q2Data.find(d => d.Miesiąc === activeMonth);
-        tableRows = PARAMETERS.map((p, i) => ({
-            id: i + 1, label: p.label,
-            r: parseFloat(mData?.[`${p.key}R`] || 0),
-            a: parseFloat(mData?.[`${p.key}A`] || 0),
-            g: parseFloat(mData?.[`${p.key}G`] || 0)
-        }));
-    }
+        return {
+            firstColumnHeader: "Parametr",
+            tableRows: PARAMETERS.map((p, i) => ({
+                id: i + 1, label: p.label,
+                r: parseFloat(mData?.[`${p.key}R`] || 0),
+                a: parseFloat(mData?.[`${p.key}A`] || 0),
+                g: parseFloat(mData?.[`${p.key}G`] || 0)
+            })),
+        };
+    }, [q2Data, activeMonth]);
 
-    const totalAvgR = tableRows.reduce((s, r) => s + r.r, 0) / (tableRows.length || 1);
-    const totalAvgA = tableRows.reduce((s, r) => s + r.a, 0) / (tableRows.length || 1);
-    const totalAvgG = tableRows.reduce((s, r) => s + r.g, 0) / (tableRows.length || 1);
+    const { totalAvgR, totalAvgA, totalAvgG } = useMemo(() => ({
+        totalAvgR: tableRows.reduce((s, r) => s + r.r, 0) / (tableRows.length || 1),
+        totalAvgA: tableRows.reduce((s, r) => s + r.a, 0) / (tableRows.length || 1),
+        totalAvgG: tableRows.reduce((s, r) => s + r.g, 0) / (tableRows.length || 1),
+    }), [tableRows]);
 
-    const filteredCheck = activeMonth === -1 ? checkData : checkData.filter(d => d.month === activeMonth);
-    const totalSprawdzen = filteredCheck.reduce((acc, curr) => acc + (curr.sprawdzen || 0), 0);
-    const totalSprawdzono = filteredCheck.reduce((acc, curr) => acc + (curr.sprawdzono || 0), 0);
+    const { totalSprawdzen, totalSprawdzono } = useMemo(() => {
+        const filteredCheck = activeMonth === -1 ? checkData : checkData.filter(d => d.month === activeMonth);
+        return {
+            totalSprawdzen: filteredCheck.reduce((acc, curr) => acc + (curr.sprawdzen || 0), 0),
+            totalSprawdzono: filteredCheck.reduce((acc, curr) => acc + (curr.sprawdzono || 0), 0),
+        };
+    }, [checkData, activeMonth]);
 
     return (
         <PageLayout
@@ -147,7 +163,7 @@ export default function DashboardDetails() {
                             value={totalSprawdzen.toLocaleString()}
                             icon={<Assignment />}
                             color={theme.palette.primary.main}
-                            periodText={activeMonth === -1 ? "CAŁY ROK 2026" : `${MONTHS[activeMonth-1].toUpperCase()} 2026`}
+                            periodText={periodText}
                             loading={loading}
                         />
                     </Grid>
@@ -157,7 +173,7 @@ export default function DashboardDetails() {
                             value={totalSprawdzono.toLocaleString()}
                             icon={<CheckCircle />}
                             color={theme.palette.success.main}
-                            periodText={activeMonth === -1 ? "CAŁY ROK 2026" : `${MONTHS[activeMonth-1].toUpperCase()} 2026`}
+                            periodText={periodText}
                             loading={loading}
                         />
                     </Grid>

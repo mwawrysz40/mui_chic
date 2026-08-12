@@ -1,5 +1,5 @@
 // src/components/ResultTable.jsx
-import React, { useState, useMemo } from "react";
+import React, { useState } from "react";
 import {
     Box, Table, TableBody, TableCell, TableContainer, TableHead,
     TableRow, Paper, IconButton, Tooltip, Alert, Skeleton, Snackbar
@@ -8,12 +8,12 @@ import EditIcon from "@mui/icons-material/Edit";
 import LockOpenIcon from "@mui/icons-material/LockOpen";
 import { useSampleResults, useUnlockSample } from "../hooks/queries.js";
 import { wynikiColumns } from "../config/resultColumns.js";
-import { useSortState } from "../hooks/useSortState.js";
-import { useDebouncedValue } from "../hooks/useDebouncedValue.js";
+import { useServerTable } from "../hooks/useServerTable.js";
 import StatusBadge from "./StatusBadge.jsx";
 import { BADGE_COLUMNS_RESULT } from "../config/statusBadgeConfig.js";
 import TablePaginator from "./TablePaginator.jsx";
 import SortableHeaderCell from "./SortableHeaderCell.jsx";
+import { buildStickySx } from "./stickySx.js";
 import { useAuth } from "../auth/AuthProvider";
 
 const STATUS_ZABLOKOWANY = "ZABLOKOWANY";
@@ -22,63 +22,25 @@ const allCols = [
     ...wynikiColumns.filter(c => !c.hidden),
     { id: "actions", label: "Akcje", minWidth: 150, sticky: "right", sortable: false }
 ];
+const stickySx = buildStickySx(allCols);
 
-function getStickySx(col, index, isHeader) {
-    const isHorizontalSticky = index === 0 || Boolean(col.sticky);
-    const isVerticalSticky   = isHeader;
-
-    return {
-        minWidth:        col.minWidth,
-        position:        (isHorizontalSticky || isVerticalSticky) ? "sticky" : "static",
-        left:            (index === 0 || col.sticky === "left") ? 0 : undefined,
-        right:           col.sticky === "right" ? 0 : undefined,
-        top:             isVerticalSticky ? 0 : undefined,
-        zIndex:          isHeader
-            ? (isHorizontalSticky ? 4 : 3)
-            : (isHorizontalSticky ? 2 : 1),
-        whiteSpace:      (isHeader && col.wrap) ? "normal" : "nowrap",
-        lineHeight:      (isHeader && col.wrap) ? 1.3 : undefined,
-        verticalAlign:   isHeader ? "bottom" : "middle",
-        backgroundColor: isHeader ? "#faf9ff" : (isHorizontalSticky ? "#ffffff" : undefined),
-    };
-}
+/** Mapa: klucz stanu filtrów strony → parametr API GetSampleResult. */
+const FILTER_PARAMS = {
+    search: "search",
+    status: "status",
+    batch: "batch",
+    dateFrom: "dateFrom",
+    dateTo: "dateTo",
+};
 
 export default function ResultTable({ onEdit, filters }) {
-    // Paginacja/filtr/sort po stronie bazy.
-    const [page, setPageRaw] = useState(0);
-    const [pageSize, setPageSizeRaw] = useState(25);
-    const { sortCol, sortDir, handleSort } = useSortState();
-    const debouncedFilters = useDebouncedValue(filters, 300);
-
-    // Reset strony przy zmianie filtra/sortu — wzorzec "dostosuj stan w trakcie
-    // renderu" (bez useEffect), żeby zapytanie od razu szło po stronie 0.
-    const resetKey = `${JSON.stringify(debouncedFilters)}|${sortCol}|${sortDir}`;
-    const [prevResetKey, setPrevResetKey] = useState(resetKey);
-    let currentPage = page;
-    if (prevResetKey !== resetKey) {
-        setPrevResetKey(resetKey);
-        if (page !== 0) setPageRaw(0);
-        currentPage = 0;
-    }
-
-    const apiParams = useMemo(() => {
-        const p = { page: currentPage, pageSize };
-        if (sortCol) { p.sortCol = sortCol; p.sortDir = sortDir; }
-        if (debouncedFilters.search) p.search = debouncedFilters.search;
-        if (debouncedFilters.status) p.status = debouncedFilters.status;
-        if (debouncedFilters.batch) p.batch = debouncedFilters.batch;
-        if (debouncedFilters.dateFrom) p.dateFrom = debouncedFilters.dateFrom;
-        if (debouncedFilters.dateTo) p.dateTo = debouncedFilters.dateTo;
-        return p;
-    }, [currentPage, pageSize, sortCol, sortDir, debouncedFilters]);
+    // Paginacja/filtr/sort po stronie bazy — wspólny stan w useServerTable.
+    const { apiParams, sortCol, sortDir, handleSort, paginatorProps } =
+        useServerTable(filters, FILTER_PARAMS);
 
     const { data, isLoading: loading, isError } = useSampleResults(apiParams);
     const rows = data?.rows ?? [];
     const total = data?.total ?? 0;
-    const totalPages = Math.max(1, Math.ceil(total / pageSize));
-
-    const setPage = (newPage) => setPageRaw(Math.max(0, Math.min(newPage, totalPages - 1)));
-    const setPageSize = (newSize) => { setPageSizeRaw(newSize); setPageRaw(0); };
 
     const unlockMut = useUnlockSample();
     const { user } = useAuth();
@@ -138,7 +100,7 @@ export default function ResultTable({ onEdit, filters }) {
                                     <SortableHeaderCell
                                         key={col.id}
                                         col={col}
-                                        stickySx={getStickySx(col, index, true)}
+                                        stickySx={stickySx.head[index]}
                                         sortCol={sortCol}
                                         sortDir={sortDir}
                                         onSort={handleSort}
@@ -151,7 +113,7 @@ export default function ResultTable({ onEdit, filters }) {
                             {rows.map((row) => (
                                 <TableRow key={row.ID} hover>
                                     {allCols.map((col, index) => (
-                                        <TableCell key={col.id} sx={getStickySx(col, index, false)}>
+                                        <TableCell key={col.id} sx={stickySx.cell[index]}>
                                             {col.id === "actions" ? (
                                                 <>
                                                     <Tooltip title="Edytuj wynik">
@@ -193,14 +155,7 @@ export default function ResultTable({ onEdit, filters }) {
                     </Table>
                 </TableContainer>
 
-                <TablePaginator
-                    page={currentPage}
-                    pageSize={pageSize}
-                    totalRows={total}
-                    totalPages={totalPages}
-                    setPage={setPage}
-                    setPageSize={setPageSize}
-                />
+                <TablePaginator {...paginatorProps(total)} />
 
             </Paper>
 
