@@ -18,6 +18,12 @@ import {
     createMrpOrder,
 } from "../api/mrpService";
 import { fetchEwidencje, fetchEwidencjaData } from "../api/ewidencjeService";
+import { fetchBanderole, fetchBanderolaData } from "../api/banderoleService";
+import {
+    fetchZleceniaGroups,
+    fetchZleceniaData,
+    updateZlecenieComment,
+} from "../api/productionOrdersService";
 
 /** Centralne klucze zapytań — jedno źródło prawdy dla cache i unieważniania. */
 export const queryKeys = {
@@ -31,6 +37,10 @@ export const queryKeys = {
     mrpData: ["mrpData"],
     ewidencje: ["ewidencje"],
     ewidencjaData: (key, filters) => ["ewidencjaData", key, filters],
+    banderole: ["banderole"],
+    banderolaData: (key, filters) => ["banderolaData", key, filters],
+    zleceniaGroups: ["zleceniaGroups"],
+    zleceniaData: (key) => ["zleceniaData", key],
 };
 
 // ---------- Zapytania (odczyt) ----------
@@ -167,6 +177,45 @@ export function useEwidencjaData(key, filters, enabled) {
         queryKey: queryKeys.ewidencjaData(key, filters),
         queryFn: () => fetchEwidencjaData(key, filters),
         enabled,
+    });
+}
+
+// ---------- Ewidencja banderol ----------
+
+export function useBanderole() {
+    return useQuery({ queryKey: queryKeys.banderole, queryFn: fetchBanderole });
+}
+
+export function useBanderolaData(key, filters, enabled) {
+    return useQuery({
+        queryKey: queryKeys.banderolaData(key, filters),
+        queryFn: () => fetchBanderolaData(key, filters),
+        enabled,
+    });
+}
+
+// ---------- Spis zleceń produkcyjnych ----------
+
+export function useZleceniaGroups() {
+    return useQuery({ queryKey: queryKeys.zleceniaGroups, queryFn: fetchZleceniaGroups });
+}
+
+export function useZleceniaData(key) {
+    return useQuery({
+        queryKey: queryKeys.zleceniaData(key),
+        queryFn: () => fetchZleceniaData(key),
+        enabled: Boolean(key),
+        placeholderData: keepPreviousData, // płynna zmiana zakładki
+    });
+}
+
+export function useUpdateZlecenieComment() {
+    const qc = useQueryClient();
+    return useMutation({
+        mutationFn: updateZlecenieComment,
+        // Klucz komentarza to "<Rodzaj>|<NrDok>" — wpis dotyczy jednej grupy.
+        onSuccess: (_data, { Group }) =>
+            qc.invalidateQueries({ queryKey: queryKeys.zleceniaData(Group) }),
     });
 }
 

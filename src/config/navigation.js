@@ -9,6 +9,8 @@ import BiotechIcon from "@mui/icons-material/Biotech";
 import AssessmentIcon from "@mui/icons-material/Assessment";
 import InventoryIcon from "@mui/icons-material/Inventory";
 import ReceiptLongIcon from "@mui/icons-material/ReceiptLong";
+import ConfirmationNumberIcon from "@mui/icons-material/ConfirmationNumber";
+import FactoryIcon from "@mui/icons-material/Factory";
 
 // Nazwy grup Keycloak. Porównywane bez uwzględniania wielkości liter
 // i bez ścieżki nadrzędnej (patrz src/auth/access.js).
@@ -64,9 +66,15 @@ export const NAV_SECTIONS = [
         items: [
             {
                 id:    "ewidencje",
-                label: "Ewidencje akcyzowe",
+                label: "Ewidencje akcyzowe-ESL",
                 path:  "/ewidencje",
                 icon:  ReceiptLongIcon,
+            },
+            {
+                id:    "banderole",
+                label: "Ewidencja banderol-ESL",
+                path:  "/banderole",
+                icon:  ConfirmationNumberIcon,
             },
         ],
     },
@@ -80,6 +88,12 @@ export const NAV_SECTIONS = [
                 label: "MRP",
                 path:  "/mrp",
                 icon:  InventoryIcon,
+            },
+            {
+                id:    "zlecenia",
+                label: "Spis zleceń produkcyjnych",
+                path:  "/zlecenia",
+                icon:  FactoryIcon,
             },
         ],
     },

@@ -19,7 +19,8 @@ const PAGE_TITLES = {
     '/':           { title: 'Dashboard',               sub: 'Przegląd systemu i statystyki' },
     '/probki':     { title: 'Ewidencja Próbek Laboratoryjnych', sub: 'Zarządzanie próbkami i seriami badawczymi' },
     '/wyniki':     { title: 'Wyniki Analiz',                    sub: 'Przeglądanie i edycja wyników badań' },
-    '/ewidencje':  { title: 'Ewidencje akcyzowe',               sub: 'Raporty akcyzowe i eksport do Excel/PDF' },
+    '/ewidencje':  { title: 'Ewidencje akcyzowe-ESL',           sub: 'Raporty akcyzowe i eksport do Excel/PDF' },
+    '/banderole':  { title: 'Ewidencja banderol-ESL',           sub: 'Rejestr banderol podatkowych i eksport do Excel/PDF' },
     '/mrp':        { title: 'MRP',                              sub: 'Planowanie zapotrzebowania materiałowego' },
 }
 
