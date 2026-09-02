@@ -7,7 +7,7 @@ import DashboardIcon from "@mui/icons-material/Dashboard";
 import ScienceIcon from "@mui/icons-material/Science";
 import BiotechIcon from "@mui/icons-material/Biotech";
 import AssessmentIcon from "@mui/icons-material/Assessment";
-import InventoryIcon from "@mui/icons-material/Inventory";
+// import InventoryIcon from "@mui/icons-material/Inventory"; // patrz wyłączona pozycja MRP
 import ReceiptLongIcon from "@mui/icons-material/ReceiptLong";
 import ConfirmationNumberIcon from "@mui/icons-material/ConfirmationNumber";
 import FactoryIcon from "@mui/icons-material/Factory";
@@ -83,12 +83,14 @@ export const NAV_SECTIONS = [
         label:  "Administracja",
         groups: [GROUPS.ADMINISTRACJA],
         items: [
-            {
-                id:    "mrp",
-                label: "MRP",
-                path:  "/mrp",
-                icon:  InventoryIcon,
-            },
+            // MRP tymczasowo wyłączone — trasa jest liczona z NAV_SECTIONS,
+            // więc zakomentowanie pozycji zamyka też dostęp do /mrp.
+            // {
+            //     id:    "mrp",
+            //     label: "MRP",
+            //     path:  "/mrp",
+            //     icon:  InventoryIcon,
+            // },
             {
                 id:    "zlecenia",
                 label: "Spis zleceń produkcyjnych",

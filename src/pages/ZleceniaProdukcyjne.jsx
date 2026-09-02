@@ -2,9 +2,9 @@
 import React, { useMemo, useState } from "react";
 import {
     Alert, Box, Button, CircularProgress, Dialog, DialogActions, DialogContent,
-    DialogTitle, IconButton, Paper, Skeleton, Snackbar, Tab, Table, TableBody,
-    TableCell, TableContainer, TableHead, TableRow, Tabs, TextField, Tooltip,
-    Typography,
+    DialogTitle, IconButton, LinearProgress, Paper, Skeleton, Snackbar, Tab,
+    Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Tabs,
+    TextField, Tooltip, Typography,
 } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import TableViewIcon from "@mui/icons-material/TableView";
@@ -124,8 +124,15 @@ export default function ZleceniaProdukcyjne() {
     const [snack, setSnack] = useState(null); // { severity, message }
     const [exporting, setExporting] = useState(false);
 
-    const { data: rows = [], isLoading, isFetching, isError } = useZleceniaData(activeKey);
+    const {
+        data: rows = [], isLoading, isFetching, isPlaceholderData, isError,
+    } = useZleceniaData(activeKey);
     const updateMut = useUpdateZlecenieComment();
+
+    // Po zmianie zakładki React Query pokazuje dane poprzedniej grupy
+    // (placeholderData) — do czasu odpowiedzi traktujemy to jak ładowanie,
+    // żeby nie prezentować cudzych wierszy pod nagłówkami nowej grupy.
+    const loadingRows = metaLoading || isLoading || isPlaceholderData;
 
     // Ten sam filtr stosuje backend przy eksporcie Excel (applyFilters).
     const filteredRows = useMemo(() => {
@@ -201,6 +208,11 @@ export default function ZleceniaProdukcyjne() {
                     ))}
                 </Tabs>
 
+                {/* Stała wysokość — pasek pojawia się bez przeskoku układu. */}
+                <Box sx={{ height: 3 }}>
+                    {isFetching && <LinearProgress sx={{ height: 3 }} />}
+                </Box>
+
                 <Box sx={{ display: "flex", gap: 1.5, flexWrap: "wrap", alignItems: "center", p: 2 }}>
                     <TextField
                         size="small" label="Szukaj" sx={{ minWidth: 240 }}
@@ -226,11 +238,16 @@ export default function ZleceniaProdukcyjne() {
                     >
                         Excel
                     </Button>
-                    {isFetching && !isLoading && <CircularProgress size={18} />}
+                    {isFetching && (
+                        <Box sx={{ display: "flex", alignItems: "center", gap: 1, color: "text.secondary" }}>
+                            <CircularProgress size={16} />
+                            <Typography variant="caption">Wczytywanie danych…</Typography>
+                        </Box>
+                    )}
                 </Box>
             </Paper>
 
-            {metaLoading || isLoading ? (
+            {loadingRows ? (
                 <Box>
                     {Array.from({ length: 6 }).map((_, i) => (
                         <Skeleton key={i} variant="rounded" height={44} sx={{ mb: 1 }} />

@@ -11,7 +11,7 @@ import { useAccess } from './auth/access';
 // const Dashboard = lazy(() => import('./pages/Dashboard'))
 const Probki = lazy(() => import('./pages/Probki'))
 const WynikProbek = lazy(() => import('./pages/WynikiProbek'))
-const Mrp = lazy(() => import('./pages/Mrp'))
+// const Mrp = lazy(() => import('./pages/Mrp')) // MRP tymczasowo wyłączone
 const Ewidencje = lazy(() => import('./pages/Ewidencje'))
 const Banderole = lazy(() => import('./pages/Banderole'))
 const ZleceniaProdukcyjne = lazy(() => import('./pages/ZleceniaProdukcyjne'))
@@ -40,7 +40,9 @@ export default function App() {
                     <Route path="/wyniki"    element={<RequireAccess><WynikProbek /></RequireAccess>} />
                     <Route path="/ewidencje" element={<RequireAccess><Ewidencje /></RequireAccess>} />
                     <Route path="/banderole" element={<RequireAccess><Banderole /></RequireAccess>} />
+                    {/* MRP tymczasowo wyłączone — patrz zakomentowana pozycja w config/navigation.js
                     <Route path="/mrp"       element={<RequireAccess><Mrp /></RequireAccess>} />
+                    */}
                     <Route path="/zlecenia"  element={<RequireAccess><ZleceniaProdukcyjne /></RequireAccess>} />
                 </Routes>
             </Suspense>

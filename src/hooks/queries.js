@@ -18,7 +18,7 @@ import {
     createMrpOrder,
 } from "../api/mrpService";
 import { fetchEwidencje, fetchEwidencjaData } from "../api/ewidencjeService";
-import { fetchBanderole, fetchBanderolaData } from "../api/banderoleService";
+import { fetchBanderole, fetchBanderolaData, fetchBanderolaItemCodes } from "../api/banderoleService";
 import {
     fetchZleceniaGroups,
     fetchZleceniaData,
@@ -39,6 +39,7 @@ export const queryKeys = {
     ewidencjaData: (key, filters) => ["ewidencjaData", key, filters],
     banderole: ["banderole"],
     banderolaData: (key, filters) => ["banderolaData", key, filters],
+    banderolaItemCodes: (key) => ["banderolaItemCodes", key],
     zleceniaGroups: ["zleceniaGroups"],
     zleceniaData: (key) => ["zleceniaData", key],
 };
@@ -184,6 +185,15 @@ export function useEwidencjaData(key, filters, enabled) {
 
 export function useBanderole() {
     return useQuery({ queryKey: queryKeys.banderole, queryFn: fetchBanderole });
+}
+
+/** Kody banderol rejestru zbiorczego — pobierane dopiero po jego wybraniu. */
+export function useBanderolaItemCodes(key, enabled) {
+    return useQuery({
+        queryKey: queryKeys.banderolaItemCodes(key),
+        queryFn: () => fetchBanderolaItemCodes(key),
+        enabled,
+    });
 }
 
 export function useBanderolaData(key, filters, enabled) {
