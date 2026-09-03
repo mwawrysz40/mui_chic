@@ -11,6 +11,9 @@ import AssessmentIcon from "@mui/icons-material/Assessment";
 import ReceiptLongIcon from "@mui/icons-material/ReceiptLong";
 import ConfirmationNumberIcon from "@mui/icons-material/ConfirmationNumber";
 import FactoryIcon from "@mui/icons-material/Factory";
+import SummarizeIcon from "@mui/icons-material/Summarize";
+import OutboxIcon from "@mui/icons-material/Outbox";
+import BarChartIcon from "@mui/icons-material/BarChart";
 
 // Nazwy grup Keycloak. Porównywane bez uwzględniania wielkości liter
 // i bez ścieżki nadrzędnej (patrz src/auth/access.js).
@@ -19,6 +22,7 @@ export const GROUPS = {
     LABORATORIUM:  "Laboratorium",
     AKCYZA:        "Akcyza",
     ADMINISTRACJA: "Administracja",
+    PRODUKCJA:     "Produkcja",
 };
 
 // Grupa z dostępem do wszystkiego — nie trzeba jej wypisywać w sekcjach.
@@ -75,6 +79,31 @@ export const NAV_SECTIONS = [
                 label: "Ewidencja banderol-ESL",
                 path:  "/banderole",
                 icon:  ConfirmationNumberIcon,
+            },
+        ],
+    },
+    {
+        id:     "produkcja",
+        label:  "Produkcja",
+        groups: [GROUPS.PRODUKCJA],
+        items: [
+            {
+                id:    "raport-miesieczny",
+                label: "Raport miesięczny",
+                path:  "/produkcja/raport-miesieczny",
+                icon:  SummarizeIcon,
+            },
+            {
+                id:    "raport-rw",
+                label: "Raport RW",
+                path:  "/produkcja/raport-rw",
+                icon:  OutboxIcon,
+            },
+            {
+                id:    "wykres-rw",
+                label: "Wykres RW/PW",
+                path:  "/produkcja/wykres-rw",
+                icon:  BarChartIcon,
             },
         ],
     },

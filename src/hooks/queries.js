@@ -24,6 +24,7 @@ import {
     fetchZleceniaData,
     updateZlecenieComment,
 } from "../api/productionOrdersService";
+import { fetchRaportMiesieczny, fetchRaportRw, fetchWykresRw, fetchWykresRwItems } from "../api/produkcjaService";
 
 /** Centralne klucze zapytań — jedno źródło prawdy dla cache i unieważniania. */
 export const queryKeys = {
@@ -42,6 +43,10 @@ export const queryKeys = {
     banderolaItemCodes: (key) => ["banderolaItemCodes", key],
     zleceniaGroups: ["zleceniaGroups"],
     zleceniaData: (key) => ["zleceniaData", key],
+    raportMiesieczny: (filters) => ["raportMiesieczny", filters],
+    raportRw: (filters) => ["raportRw", filters],
+    wykresRw: (filters) => ["wykresRw", filters],
+    wykresRwItems: (filters) => ["wykresRwItems", filters],
 };
 
 // ---------- Zapytania (odczyt) ----------
@@ -226,6 +231,42 @@ export function useUpdateZlecenieComment() {
         // Klucz komentarza to "<Rodzaj>|<NrDok>" — wpis dotyczy jednej grupy.
         onSuccess: (_data, { Group }) =>
             qc.invalidateQueries({ queryKey: queryKeys.zleceniaData(Group) }),
+    });
+}
+
+// ---------- Produkcja ----------
+
+export function useRaportMiesieczny(filters, enabled) {
+    return useQuery({
+        queryKey: queryKeys.raportMiesieczny(filters),
+        queryFn: () => fetchRaportMiesieczny(filters),
+        enabled,
+    });
+}
+
+export function useRaportRw(filters, enabled) {
+    return useQuery({
+        queryKey: queryKeys.raportRw(filters),
+        queryFn: () => fetchRaportRw(filters),
+        enabled,
+    });
+}
+
+/** Indeksy do listy na wykresie — pobierane, gdy tylko zakres dat jest kompletny. */
+export function useWykresRwItems(filters, enabled) {
+    return useQuery({
+        queryKey: queryKeys.wykresRwItems(filters),
+        queryFn: () => fetchWykresRwItems(filters),
+        enabled,
+        placeholderData: keepPreviousData, // lista nie znika przy zmianie dat
+    });
+}
+
+export function useWykresRw(filters, enabled) {
+    return useQuery({
+        queryKey: queryKeys.wykresRw(filters),
+        queryFn: () => fetchWykresRw(filters),
+        enabled,
     });
 }
 

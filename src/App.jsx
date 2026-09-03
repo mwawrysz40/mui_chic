@@ -15,6 +15,9 @@ const WynikProbek = lazy(() => import('./pages/WynikiProbek'))
 const Ewidencje = lazy(() => import('./pages/Ewidencje'))
 const Banderole = lazy(() => import('./pages/Banderole'))
 const ZleceniaProdukcyjne = lazy(() => import('./pages/ZleceniaProdukcyjne'))
+const RaportMiesieczny = lazy(() => import('./pages/RaportMiesieczny'))
+const RaportRw = lazy(() => import('./pages/RaportRw'))
+const WykresRwPw = lazy(() => import('./pages/WykresRwPw'))
 
 
 // Użytkownik bez grupy Laboratorium nie zobaczy Dashboardu — kierujemy go
@@ -44,6 +47,9 @@ export default function App() {
                     <Route path="/mrp"       element={<RequireAccess><Mrp /></RequireAccess>} />
                     */}
                     <Route path="/zlecenia"  element={<RequireAccess><ZleceniaProdukcyjne /></RequireAccess>} />
+                    <Route path="/produkcja/raport-miesieczny" element={<RequireAccess><RaportMiesieczny /></RequireAccess>} />
+                    <Route path="/produkcja/raport-rw"         element={<RequireAccess><RaportRw /></RequireAccess>} />
+                    <Route path="/produkcja/wykres-rw"         element={<RequireAccess><WykresRwPw /></RequireAccess>} />
                 </Routes>
             </Suspense>
         </Layout>
